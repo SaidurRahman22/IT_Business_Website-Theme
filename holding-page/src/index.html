@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Legends — Under Maintenance | Envenox</title>
+<meta name="description" content="Legends is under maintenance. Envenox — IT solutions and software development. We are upgrading the system and will be back shortly.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#060910">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Legends — Under Maintenance | Envenox">
+<meta property="og:description" content="Envenox — IT solutions &amp; software development. System upgrade in progress.">
+<meta property="og:url" content="https://envenox.com/">
+<meta property="og:image" content="https://envenox.com/assets/system-upgrade.gif">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23060910'/%3E%3Ccircle cx='32' cy='32' r='19' fill='none' stroke='%23F8FAFC' stroke-width='9'/%3E%3Cpath d='M32 26 L38 32 L32 38 L26 32 Z' fill='%23F59E0B'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500&display=swap">
+
+<style>
+/* ============================================================
+   Envenox — Legends maintenance holding page
+   Dark-OLED system. No JavaScript: every state below is CSS, so
+   the page cannot land blank if a script is blocked or fails.
+   ============================================================ */
+
+:root{
+  --bg:#060910;
+  --card:#0E1626;
+  --fg:#F8FAFC;
+  --muted:#94A3B8;
+  --muted-2:#7D8CA3;
+  --border:rgba(148,163,184,.16);
+  --amber:#F59E0B;
+  --amber-soft:rgba(245,158,11,.14);
+
+  --maxw:min(92vw,54rem);
+  --r:16px;
+
+  --font-display:'Outfit',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-body:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+
+body{
+  margin:0;min-height:100svh;
+  background:var(--bg);color:var(--fg);
+  font-family:var(--font-body);font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  display:grid;place-items:center;
+  padding:clamp(1.75rem,5vw,3.5rem) 16px;
+  overflow-x:hidden;position:relative;
+}
+
+/* ---- atmosphere ---- */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg::before,.bg::after{
+  content:"";position:absolute;width:70vmax;height:70vmax;border-radius:50%;
+  filter:blur(90px);opacity:.34;
+}
+.bg::before{
+  background:radial-gradient(circle,rgba(245,158,11,.38),transparent 62%);
+  top:-30vmax;left:-20vmax;animation:drift-a 26s ease-in-out infinite alternate;
+}
+.bg::after{
+  background:radial-gradient(circle,rgba(56,120,220,.40),transparent 62%);
+  bottom:-32vmax;right:-22vmax;animation:drift-b 31s ease-in-out infinite alternate;
+}
+.grain{
+  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.28;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E");
+}
+@keyframes drift-a{to{transform:translate3d(9vmax,6vmax,0) scale(1.1)}}
+@keyframes drift-b{to{transform:translate3d(-8vmax,-5vmax,0) scale(1.07)}}
+
+main{position:relative;z-index:2;width:var(--maxw);text-align:center}
+
+/* ============================================================
+   ENVENOX wordmark — interim, built from Outfit caps plus a
+   ring-and-diamond O that matches the real mark.
+
+   SWAP POINT: when the real logo file lands in assets/, replace
+   the whole .wordmark element in the markup with
+     <img class="logo" src="assets/envenox-logo.svg" alt="Envenox">
+   and delete the .wordmark / .glyph-o rules below. The .logo rule
+   is already here and sized, so nothing else has to change.
+   ============================================================ */
+.wordmark{
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:600;
+  font-size:clamp(1.05rem,3.4vw,1.5rem);
+  letter-spacing:.3em;text-indent:.3em;
+  color:var(--fg);line-height:1;
+  margin-bottom:clamp(1.5rem,4.5vw,2.5rem);
+}
+/* viewBox is cropped tight to the stroked circle (centre 32, r 23,
+   stroke 11 -> outer edge 3.5..60.5). With the default 0..64 box the
+   slack around the ring read as an extra word space and the mark came
+   out as "ENVENO X". */
+.glyph-o{
+  width:.74em;height:.74em;flex:none;display:block;
+  margin:0 .04em 0 0;color:var(--fg);
+}
+.glyph-o .dot{color:var(--amber)}
+.logo{
+  display:block;margin:0 auto clamp(1.5rem,4.5vw,2.5rem);
+  width:clamp(9rem,32vw,13rem);height:auto;
+}
+
+h1{
+  margin:0;
+  font-family:var(--font-display);font-weight:600;
+  font-size:clamp(2.6rem,13vw,6.75rem);
+  line-height:.94;letter-spacing:.14em;text-indent:.14em;
+  background:linear-gradient(180deg,#FFFFFF 18%,#9FB0C8 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 72px rgba(245,158,11,.14);
+}
+
+.tagline{
+  margin:clamp(.9rem,2.5vw,1.25rem) 0 0;
+  font-size:clamp(.7rem,2.1vw,.8rem);font-weight:500;
+  letter-spacing:.26em;text-transform:uppercase;color:var(--muted);
+}
+
+.status{
+  display:inline-flex;align-items:center;gap:.6rem;
+  margin:clamp(1.5rem,4vw,2.1rem) 0 0;
+  padding:.5rem 1.05rem;
+  border:1px solid rgba(245,158,11,.34);
+  background:var(--amber-soft);border-radius:999px;
+  font-size:.74rem;font-weight:500;
+  letter-spacing:.17em;text-transform:uppercase;color:#FCD34D;
+}
+.dot-led{width:7px;height:7px;border-radius:50%;background:var(--amber);flex:none;
+  box-shadow:0 0 0 0 rgba(245,158,11,.65);animation:pulse 2s ease-out infinite}
+@keyframes pulse{
+  70%{box-shadow:0 0 0 9px rgba(245,158,11,0)}
+  100%{box-shadow:0 0 0 0 rgba(245,158,11,0)}
+}
+
+.wait{margin:1.1rem 0 0;font-size:clamp(1rem,2.6vw,1.15rem);color:var(--muted)}
+.wait b{font-weight:500;color:#E2E8F0}
+/* All five dots stay visible and shimmer left to right. They must never hit
+   opacity 0: an invisible inline dot still occupies its layout box, so fading
+   them out renders as a gap plus a stray dot instead of "please wait.....". */
+.wait i{font-style:normal;opacity:.3;animation:dots 2.2s ease-in-out infinite}
+.wait i:nth-of-type(1){animation-delay:0s}
+.wait i:nth-of-type(2){animation-delay:.13s}
+.wait i:nth-of-type(3){animation-delay:.26s}
+.wait i:nth-of-type(4){animation-delay:.39s}
+.wait i:nth-of-type(5){animation-delay:.52s}
+@keyframes dots{0%,100%{opacity:.3}30%,55%{opacity:1}}
+
+figure{margin:clamp(2.1rem,5.5vw,3.25rem) auto 0;max-width:38rem;position:relative}
+.frame{
+  position:relative;border:1px solid var(--border);border-radius:var(--r);
+  background:var(--card);padding:9px;
+  box-shadow:0 30px 70px -20px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.05);
+}
+.frame img{
+  display:block;width:100%;height:auto;
+  aspect-ratio:640/360;          /* reserve space: no layout shift */
+  border-radius:calc(var(--r) - 8px);background:#0B1120;
+}
+.frame::before,.frame::after{
+  content:"";position:absolute;width:13px;height:13px;pointer-events:none;
+  border:1.5px solid rgba(245,158,11,.5);
+}
+.frame::before{top:-1px;left:-1px;border-right:0;border-bottom:0;border-radius:var(--r) 0 0 0}
+.frame::after{bottom:-1px;right:-1px;border-left:0;border-top:0;border-radius:0 0 var(--r) 0}
+
+figcaption{
+  margin-top:.85rem;font-size:.68rem;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--muted-2);
+}
+
+footer{
+  margin-top:clamp(2rem,5vw,3rem);font-size:.78rem;color:var(--muted-2);
+  display:flex;flex-wrap:wrap;gap:.5rem .9rem;justify-content:center;align-items:center;
+}
+footer a{color:var(--muted);text-decoration:none;border-bottom:1px solid transparent;
+  transition:color .2s ease,border-color .2s ease}
+footer a:hover{color:var(--amber);border-bottom-color:rgba(245,158,11,.5)}
+footer a:focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:3px}
+.sep{opacity:.4}
+
+@media (max-width:480px){
+  h1{letter-spacing:.08em;text-indent:.08em}
+  .status{letter-spacing:.12em;font-size:.68rem;padding:.45rem .85rem}
+  .tagline{letter-spacing:.16em}
+  .frame{padding:6px}
+  figcaption{letter-spacing:.1em;font-size:.6rem}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+  }
+  .wait i{opacity:1}
+}
+
+@media (forced-colors:active){
+  .status{border-color:CanvasText}
+  h1{color:CanvasText;-webkit-text-fill-color:CanvasText}
+}
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<main>
+
+  <div class="wordmark" role="img" aria-label="Envenox">
+    <span aria-hidden="true">ENVEN</span><svg class="glyph-o" viewBox="3.5 3.5 57 57" aria-hidden="true" focusable="false"><circle cx="32" cy="32" r="23" fill="none" stroke="currentColor" stroke-width="11"/><path class="dot" d="M32 24.5 L39.5 32 L32 39.5 L24.5 32 Z" fill="currentColor"/></svg><span aria-hidden="true">X</span>
+  </div>
+
+  <h1>LEGENDS</h1>
+
+  <p class="tagline">IT Solutions &amp; Software Development</p>
+
+  <p class="status">
+    <span class="dot-led" aria-hidden="true"></span>
+    Under Maintenance
+  </p>
+
+  <p class="wait">
+    <b>please wait</b><i>.</i><i>.</i><i>.</i><i>.</i><i>.</i>
+  </p>
+
+  <figure>
+    <div class="frame">
+      <img src="assets/system-upgrade.gif"
+           width="640" height="360"
+           alt="A console running the maintenance sequence: draining traffic, snapshotting databases, installing dependencies, migrating the schema, running the test suite, then rebuilding services while a progress bar fills."
+           decoding="async">
+    </div>
+    <figcaption>System upgrade in progress</figcaption>
+  </figure>
+
+  <footer>
+    <span>&copy; 2026 Envenox</span>
+    <span class="sep" aria-hidden="true">&middot;</span>
+    <a href="https://envenox.com">envenox.com</a>
+  </footer>
+
+</main>
+
+</body>
+</html>

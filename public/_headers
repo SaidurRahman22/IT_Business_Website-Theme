@@ -1,0 +1,53 @@
+# =============================================================================
+# SECURITY HEADERS FOR ASSET RESPONSES
+#
+# WHY THIS FILE EXISTS, AND WHY IT DUPLICATES next.config.ts
+#
+# On Cloudflare Workers with Static Assets, the assets layer answers a matching
+# request BEFORE the Worker runs (the default is run_worker_first: false). The
+# Worker is what executes Next's `headers()`, so every header configured in
+# next.config.ts is simply absent from /_next/static/* and /img/* responses.
+# Documents, Server Actions and /api/* all go through the Worker and DO get
+# those headers; assets do not.
+#
+# CSP on a .js or .woff2 response barely matters. X-Content-Type-Options does:
+# without nosniff, a browser may MIME-sniff an asset into something executable.
+# So this file restates the set for the asset paths.
+#
+# KEEP THIS IN SYNC WITH next.config.ts. Two copies of a policy is a liability,
+# but the alternative is run_worker_first: true, which turns every asset request
+# into a billed Worker invocation AND makes Cloudflare ignore this file
+# entirely. Duplication is the cheaper failure mode. If you change one, change
+# both — and note that if you ALSO set CSP via a Cloudflare Transform Rule, the
+# browser enforces the INTERSECTION of all of them, which presents as a policy
+# stricter than anything you wrote and is miserable to debug.
+#
+# CSP is Report-Only here, matching next.config.ts. Flip BOTH together.
+# =============================================================================
+
+/*
+  Content-Security-Policy-Report-Only: default-src 'none'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; media-src 'self'; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; frame-src 'none'; child-src 'none'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), autoplay=(self), browsing-topics=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), gyroscope=(), idle-detection=(), local-fonts=(), magnetometer=(), microphone=(), midi=(), payment=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), usb=(), xr-spatial-tracking=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+
+# Next fingerprints every filename under /_next/static/, so these are safe to
+# cache forever. A deploy changes the hash, not the contents at a given URL.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Not fingerprinted — a redeploy replaces these at the same path, so they get a
+# short TTL with revalidation rather than immutable.
+/img/*
+  Cache-Control: public, max-age=3600, must-revalidate
+/clips/*
+  Cache-Control: public, max-age=3600, must-revalidate
+
+# security.txt is served from here. Researchers and scanners should always see
+# the current one, not a cached copy with a stale Expires field.
+/.well-known/*
+  Cache-Control: public, max-age=300

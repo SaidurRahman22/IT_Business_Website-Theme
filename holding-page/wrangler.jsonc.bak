@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "envenox",
+  "compatibility_date": "2026-11-01",
+
+  // Static Assets: the whole site is files, there is no Worker script.
+  // `_headers` inside this directory is applied by the assets runtime.
+  "assets": {
+    "directory": "./src",
+    "not_found_handling": "404-page"
+  },
+
+  // Bind the apex and www straight to this Worker. custom_domain:true makes
+  // Cloudflare issue the certificate and create the DNS record itself, so
+  // no manual CNAME is needed.
+  // zone_id is stated explicitly: the OAuth login this deploys with has no
+  // zone-read scope, so Cloudflare cannot infer the zone from the hostname
+  // and fails with "Can't infer zone from route" [10082].
+  "routes": [
+    { "pattern": "envenox.com", "custom_domain": true, "zone_id": "f75ed98c73bc4eac6949d4e82cf972b6" },
+    { "pattern": "www.envenox.com", "custom_domain": true, "zone_id": "f75ed98c73bc4eac6949d4e82cf972b6" }
+  ],
+
+  // Keep a working URL even if the custom domain is still provisioning.
+  "workers_dev": true,
+
+  "observability": {
+    "enabled": true
+  }
+}

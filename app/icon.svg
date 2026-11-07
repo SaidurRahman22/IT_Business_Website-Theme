@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Envenox">
+  <!--
+    The Attestation mark: three plates seated into one closed form.
+    Derived from the hero's metaphor — the pieces fit, the seams close.
+
+    Deliberately NOT a padlock, a shield or a keyhole. Every leading security
+    site studied avoids all three, and a padlock favicon would undo the work the
+    rest of the identity does.
+
+    Drawn as flat fills at 32px rather than strokes: a 1px stroke at favicon
+    scale renders as grey mush on a non-integer device pixel ratio.
+  -->
+  <rect width="32" height="32" rx="7" fill="#0A0D13"/>
+  <g transform="translate(16 16)">
+    <!-- upper plate — the lit face -->
+    <path d="M0 -9 L7.8 -4.5 L0 0 L-7.8 -4.5 Z" fill="#9AA5FF"/>
+    <!-- lower-right plate -->
+    <path d="M7.8 -4.5 L7.8 4.5 L0 9 L0 0 Z" fill="#5B6CFF"/>
+    <!-- lower-left plate, held back so the three read as distinct facets -->
+    <path d="M-7.8 -4.5 L0 0 L0 9 L-7.8 4.5 Z" fill="#3B46A8"/>
+  </g>
+</svg>

@@ -1,0 +1,32 @@
+# Secrets — never commit
+.secrets/
+*.secret.md
+.env
+.env.*
+.dev.vars
+
+# Build output
+dist/
+node_modules/
+.wrangler/
+
+.dev.vars*
+!.dev.vars.example
+!.env.example
+
+# Tooling artefacts
+.playwright-mcp/
+.work/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+.vercel/
+
+# Generated assets — regenerate with `npm run assets:noise` / `assets:hero`
+# (kept OUT of ignore on purpose: they are build inputs the site ships, and a
+# fresh clone must render identically without running a generation step.)
+
+# Screenshot scratch from verification runs
+.shots/

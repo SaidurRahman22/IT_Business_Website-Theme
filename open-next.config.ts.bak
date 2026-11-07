@@ -1,0 +1,23 @@
+import { defineCloudflareConfig } from '@opennextjs/cloudflare'
+
+/**
+ * OpenNext → Cloudflare Workers.
+ *
+ * WHY A WORKER AND NOT STATIC ASSETS: this app has three Server Actions
+ * (`app/contact/_shared/actions.ts`, `app/services/_components/actions.ts`) and
+ * a POST route handler (`app/api/newsletter/route.ts`). None of those survive
+ * `output: 'export'`, so Workers Static Assets alone cannot serve this site.
+ * The previous root `wrangler.jsonc` described exactly that — it was a verbatim
+ * copy of the holding page's config, pointing at a `./src` directory that does
+ * not exist here, and would have failed on every deploy.
+ *
+ * NO INCREMENTAL CACHE IS CONFIGURED. All 108 routes are statically generated
+ * at build time and only `/thank-you` is dynamic (it reads searchParams); there
+ * is no `revalidate` anywhere, so there is no ISR state to persist. The R2
+ * bucket and WORKER_SELF_REFERENCE binding from the adapter's template are
+ * therefore omitted — an R2 binding naming a bucket that has not been created
+ * hard-fails the deploy, and buying that failure mode for a cache nothing reads
+ * is a bad trade. If ISR or on-demand revalidation is ever added, both bindings
+ * come back together; see https://opennext.js.org/cloudflare/caching
+ */
+export default defineCloudflareConfig()

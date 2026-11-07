@@ -1,0 +1,47 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // STATIC ASSETS ONLY. There is deliberately NO "main", so no Worker script is
+  // uploaded and no Worker code ever runs. Cloudflare serves files straight from
+  // the assets layer.
+  //
+  // WHY: rendering this site through the Next server in a Worker cost 205ms of
+  // CPU on the homepage, exceeded the Workers Free allowance, killed the isolate
+  // and then hung every subsequent request for ~55s. Static files consume no CPU
+  // allowance at all, which is exactly why the old holding page never broke.
+  // See MEMORY.md 2026-11-07.
+  "name": "envenox-next",
+  "account_id": "01e31f4fe3b3891a62a2bee09b76285f",
+  "compatibility_date": "2026-11-01",
+
+  "assets": {
+    // `next build` with output:'export' writes here.
+    "directory": "out",
+
+    // Serve out/404.html for unmatched paths, with a 404 status. Without this
+    // Cloudflare returns its own bare 404 and the site's own styled page,
+    // navigation and incident hotline are never shown.
+    "not_found_handling": "404-page",
+
+    // Next emits /about/leadership.html rather than /about/leadership/index.html.
+    // This serves the extensionless URL from that file and does not redirect,
+    // which keeps every canonical/sitemap URL exactly as generated.
+    "html_handling": "auto-trailing-slash"
+  },
+
+  // Keep the workers.dev URL for verification before the apex is attached.
+  // Set to false once envenox.com points here.
+  "workers_dev": true,
+
+  "observability": {
+    "enabled": true
+  }
+
+  // NO "routes" HERE ON PURPOSE.
+  //
+  // Custom domains are stored server-side against a Worker NAME. Removing or
+  // omitting `routes` does NOT detach envenox.com from whichever Worker holds
+  // it, so a deploy to the name `envenox` replaces the live site regardless of
+  // what this file says. Staging on a different name is the only safe way to
+  // verify. Attach the apex only after this URL is proven.
+}

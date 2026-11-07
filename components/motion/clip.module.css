@@ -1,0 +1,567 @@
+/* ==========================================================================
+   MOTION CLIP MODULE - MotionClip + ClipCarousel + ClipPlaceholder
+   --------------------------------------------------------------------------
+   Motion vocabulary: --ease-out (default), --ease-in-out, --ease-carousel
+   (the track slide only); --dur-micro / --dur-base / --dur-scene / --dur-carousel.
+   Animated properties: opacity, translate, transform (rotate on the
+   indeterminate arc only), filter, stroke-dashoffset. Nothing else.
+   No hover transform, no hover scale, no hover lift. Hover is a colour shift.
+   ========================================================================== */
+
+/* ==========================================================================
+   1. FRAME
+   ========================================================================== */
+
+.clip {
+  position: relative;
+  margin: 0;
+  width: 100%;
+  color: var(--fg);
+}
+
+.frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--clip-aspect, 16 / 9);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  isolation: isolate;
+}
+
+.poster,
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* The signature move: content does not fade out, it defocuses. */
+.poster {
+  z-index: 1;
+  opacity: 1;
+  filter: blur(0);
+  transition:
+    opacity var(--dur-base) var(--ease-out),
+    filter var(--dur-base) var(--ease-out);
+}
+
+.video {
+  z-index: 2;
+  opacity: 0;
+  filter: blur(4px);
+  transition:
+    opacity var(--dur-base) var(--ease-out),
+    filter var(--dur-base) var(--ease-out);
+  background: transparent;
+}
+
+.clip[data-ready='true'] .poster {
+  opacity: 0;
+  filter: blur(4px);
+}
+.clip[data-ready='true'] .video {
+  opacity: 1;
+  filter: blur(0);
+}
+
+/* A source that 404s must never leave a black rectangle on the page. */
+.clip[data-failed='true'] .video {
+  opacity: 0;
+  filter: blur(4px);
+}
+.clip[data-failed='true'] .poster {
+  opacity: 1;
+  filter: blur(0);
+}
+
+/* Native controls are replaced, not merely hidden - but belt and braces for
+   engines that paint an overlay play button on a paused media element. */
+.video::-webkit-media-controls,
+.video::-webkit-media-controls-enclosure,
+.video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.frameNote {
+  position: absolute;
+  z-index: 4;
+  left: var(--s4);
+  top: var(--s4);
+  margin: 0;
+  padding: 2px var(--s2);
+  border-radius: var(--radius-sm);
+  background: rgba(210, 210, 215, 0.64);
+  color: var(--ink-900);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.caption {
+  margin: var(--s3) 0 0;
+  max-width: 64ch;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+/* ==========================================================================
+   2. THE THREE-STATE CONTROL
+   36x36, circular, bottom-left at --s4. The scrim colour is a fixed neutral
+   on purpose: it sits over arbitrary video frames, not over a themed surface,
+   so it must not follow the palette. The glyph takes --ink-900, which is a
+   token, so the pair stays legible in every theme.
+   ========================================================================== */
+
+.control {
+  position: absolute;
+  z-index: 3;
+  left: var(--s4);
+  bottom: var(--s4);
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(210, 210, 215, 0.64);
+  color: var(--ink-900);
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  transition:
+    background-color var(--dur-micro) var(--ease-out),
+    opacity var(--dur-micro) var(--ease-out);
+}
+
+/* Hover is a colour shift. Nothing moves, nothing scales. */
+.control:hover {
+  background: rgba(210, 210, 215, 0.82);
+}
+
+.control:focus-visible {
+  outline: 2px solid var(--ink-900);
+  outline-offset: 2px;
+  background: rgba(210, 210, 215, 0.9);
+}
+
+/* Kept focusable on purpose - see the comment in MotionClip.tsx. */
+.control[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.controlGlyph {
+  width: 15px;
+  height: 15px;
+  /* The play triangle reads off-centre in an optical circle unless nudged. */
+  translate: 0 0;
+}
+.control[data-state='paused'] .controlGlyph {
+  translate: 1px 0;
+}
+
+/* The three glyphs are mutually exclusive; the swap itself is the state
+   change, so it gets the micro tempo and nothing else. */
+.control .controlGlyph {
+  transition: opacity var(--dur-micro) var(--ease-out);
+}
+
+/* ==========================================================================
+   3. RINGS - progress and loading share the 40x40 geometry
+   ========================================================================== */
+
+.rings {
+  position: absolute;
+  z-index: 3;
+  right: var(--s4);
+  bottom: var(--s4);
+  width: 40px;
+  height: 40px;
+  pointer-events: none;
+}
+
+.ring,
+.loadRing {
+  position: absolute;
+  inset: 0;
+  width: 40px;
+  height: 40px;
+  color: rgba(210, 210, 215, 0.9);
+}
+
+.ringTrack,
+.loadRingTrack {
+  stroke: rgba(210, 210, 215, 0.24);
+}
+
+/* No transition: the offset is written from the rAF loop every frame, so it is
+   already frame-smooth. A transition here would only make the ring lag behind
+   the playhead it is reporting, and `linear` is not in the easing vocabulary. */
+/* No transition on the offset: it is written from the rAF loop every frame, so
+   it is already frame-smooth. A transition would only make the ring lag behind
+   the playhead it is reporting, and `linear` is not in the easing vocabulary.
+   The dash values live on the element as SVG attributes so the ring is empty,
+   not full, before the first frame is painted. */
+.ringProgress {
+  stroke-linecap: butt;
+}
+
+/* The loading indicator: a hairline ring at 40% opacity with one short arc
+   travelling it. Deliberately not a spinner - a spinner over a dark field
+   reads as a failure, and this reads as "almost". */
+.loadRing {
+  opacity: 0.4;
+}
+
+.loadRingArc {
+  transform-origin: 20px 20px;
+  animation: ringSpin 1.1s linear infinite;
+}
+
+/* ==========================================================================
+   4. CAROUSEL
+   ========================================================================== */
+
+.carousel {
+  position: relative;
+  width: 100%;
+}
+
+.viewport {
+  width: 100%;
+  overflow: hidden;
+  /* No horizontal page scroll can ever escape from here. */
+  overflow-x: hidden;
+}
+
+.track {
+  display: flex;
+  width: 100%;
+  translate: calc(var(--clip-index, 0) * -100%) 0;
+  /* The one place --ease-carousel is permitted: a large slide transition.
+     Paired with --dur-carousel (0.6s), which was added to globals.css for
+     exactly this - the easing existed with no duration of its own, which is
+     why this previously had to borrow --dur-scene. Both halves are now tokens. */
+  transition: translate var(--dur-carousel) var(--ease-carousel);
+  will-change: translate;
+}
+
+.panel {
+  flex: 0 0 100%;
+  min-width: 0;
+  /* Radix sets tabIndex 0 on every forceMounted panel; the component sets -1
+     and `inert` on the inactive ones, so this is purely visual. */
+  outline-offset: 4px;
+}
+
+/* Clips cross-fade by defocusing. fadeOutBlur, as a transition. */
+.panel[data-state='inactive'] {
+  opacity: 0;
+  filter: blur(4px);
+}
+.panel[data-state='active'] {
+  opacity: 1;
+  filter: blur(0);
+}
+.panel {
+  transition:
+    opacity var(--dur-scene) var(--ease-out),
+    filter var(--dur-scene) var(--ease-out);
+}
+
+/* ---- the tab strip ---- */
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2) var(--s6);
+  margin-top: var(--s6);
+  padding: 0;
+}
+
+.tab {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s2);
+  padding: var(--s2) 0 var(--s3);
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--dur-micro) var(--ease-out);
+}
+
+/* Hover is a colour shift. */
+.tab:hover {
+  color: var(--muted-strong);
+}
+.tab[data-state='active'] {
+  color: var(--fg);
+}
+.tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.tabNum {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  letter-spacing: -0.02em;
+}
+.tab[data-state='active'] .tabNum {
+  color: var(--accent);
+}
+
+.tabLabel {
+  letter-spacing: var(--tracking-normal);
+}
+
+/* The active indicator is drawn with scaleX on a 1px rule - a transform, not
+   a width animation. */
+.tabRule {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-base) var(--ease-in-out);
+}
+.tab[data-state='active'] .tabRule {
+  transform: scaleX(1);
+}
+
+/* ==========================================================================
+   5. PLACEHOLDER SLATE
+   ========================================================================== */
+
+.placeholder {
+  position: relative;
+  width: 100%;
+  color: var(--fg);
+}
+
+.placeholderFrame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--clip-aspect, 16 / 9);
+  overflow: hidden;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.placeholderHatch {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--border-strong) 55%, transparent) 0 1px,
+    transparent 1px 11px
+  );
+  opacity: 0.8;
+}
+
+.placeholderBody {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--s2);
+  padding: var(--s4);
+}
+
+.placeholderFlag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  align-self: flex-start;
+  margin: 0;
+  padding: var(--s1) var(--s2);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  color: var(--accent);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.placeholderIcon {
+  width: 13px;
+  height: 13px;
+  flex: none;
+}
+
+.placeholderName {
+  margin: 0;
+  color: var(--fg);
+  font-size: var(--text-sm);
+  word-break: break-all;
+}
+
+.placeholderSpec {
+  margin: 0;
+  display: grid;
+  gap: var(--s1);
+  font-size: var(--text-xs);
+  color: var(--muted);
+  line-height: var(--leading-snug);
+}
+
+.placeholderSpecRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
+.placeholderSpecRow > dt {
+  flex: none;
+  min-width: 4.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.placeholderSpecRow > dd {
+  margin: 0;
+  flex: 1 1 14rem;
+  min-width: 0;
+  color: var(--muted-strong);
+}
+
+/* ==========================================================================
+   6. NO JAVASCRIPT
+   `.no-js` is on <html> by default and removed by an inline script. Without
+   JS the track cannot translate and the control cannot do anything, so the
+   carousel stops pretending to be one: every clip stacks, every poster and
+   caption stays readable, and the dead control is removed rather than left
+   as an affordance that does nothing.
+   ========================================================================== */
+
+:global(.no-js) .track {
+  display: block;
+  translate: none;
+  transition: none;
+}
+:global(.no-js) .panel {
+  opacity: 1 !important;
+  filter: none !important;
+  margin-bottom: var(--s8);
+}
+:global(.no-js) .panel:last-child {
+  margin-bottom: 0;
+}
+:global(.no-js) .tabs {
+  display: none;
+}
+:global(.no-js) .control,
+:global(.no-js) .rings {
+  display: none;
+}
+:global(.no-js) .poster {
+  opacity: 1;
+  filter: none;
+}
+:global(.no-js) .video {
+  display: none;
+}
+
+/* ==========================================================================
+   7. REDUCED MOTION
+   globals.css collapses every duration already; this pins the end states so
+   nothing can be stranded mid-transition, and stops the indeterminate arc.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    transition: none;
+  }
+  .panel {
+    transition: none;
+  }
+  .poster,
+  .video {
+    transition: none;
+  }
+  .loadRingArc {
+    animation: none;
+  }
+  .tabRule {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   8. PRINT
+   ========================================================================== */
+
+@media print {
+  .control,
+  .rings,
+  .tabs {
+    display: none !important;
+  }
+  .track {
+    display: block;
+    translate: none;
+  }
+  .panel {
+    opacity: 1 !important;
+    filter: none !important;
+  }
+  .video {
+    display: none;
+  }
+  .poster {
+    opacity: 1;
+    filter: none;
+  }
+}
+
+/* ==========================================================================
+   LOCAL KEYFRAMES
+
+   These are copies of the shared motion vocabulary in app/globals.css, and
+   they have to be copies.
+
+   CSS Modules rewrite every animation-name in this file to a locally scoped
+   hash, whether or not the keyframes are defined here. A bare reference to a
+   keyframe that lives in globals.css therefore compiles to a name that exists
+   nowhere, the animation silently never runs, and because these rules pair
+   with a hidden start state (opacity: 0, stroke-dashoffset) the element stays
+   invisible forever. That is exactly what happened to the Secure SDLC pipeline
+   on /services/devsecops.
+
+   `:global(name)` inside an animation value is NOT an option: this toolchain
+   rejects it outright with "Double colon" at build time.
+
+   scripts/check-animations.mjs enforces that every animation-name used in a
+   *.module.css is defined in that same file. Keep these in step with
+   globals.css if the vocabulary changes.
+   ========================================================================== */
+
+@keyframes ringSpin {
+  100% {
+    transform: rotate(360deg);
+  }
+}

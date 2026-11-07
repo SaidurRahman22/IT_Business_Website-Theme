@@ -1,0 +1,21 @@
+# =============================================================================
+# REDIRECTS FOR THE STATIC EXPORT
+#
+# next.config.ts `redirects()` is IGNORED under `output: 'export'` - Next warns
+# about this on every build. These are the same eight rules, in the format
+# Cloudflare Workers Assets reads. Next copies public/ into out/, so this file
+# ships at the root of the deployment where Cloudflare looks for it.
+#
+# KEEP IN SYNC with the redirects() block in next.config.ts, which is retained
+# there only so `next dev` and any future server deploy behave the same way.
+# =============================================================================
+
+# PART 14 - redirect the obvious URL guesses
+/portfolio    /case-studies                   301
+/clients      /customers                      301
+/work         /case-studies                   301
+/pen-testing  /services/penetration-testing   301
+/pentest      /services/penetration-testing   301
+/team         /about/leadership               301
+/security     /services/cybersecurity         301
+/software     /services/software-development  301

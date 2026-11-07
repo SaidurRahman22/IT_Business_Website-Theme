@@ -1,0 +1,336 @@
+/* =============================================================================
+   HERO - typographic scroll-story. See DESIGN-DIRECTION.md §5.
+
+   The previous hero spent the entire motion budget on a WebGL icosahedron that
+   rendered as a dark sphere and said "integrity" - a security idea, told
+   abstractly, at the moment a visitor is deciding what this company does.
+
+   This one is the story, in type. The LCP element is text: it is in the HTML,
+   it needs no JavaScript, and it is readable before anything executes.
+
+   Motion vocabulary only: --ease-out / --ease-in-out / --ease-theme,
+   --dur-micro / --dur-base / --dur-scene, distances capped at 32px.
+   ============================================================================= */
+
+.hero {
+  position: relative;
+  background-color: var(--bg);
+  color: var(--fg);
+}
+
+/* THE STAGE IS NORMAL FLOW, NOT A PIN.
+
+   It used to be a 280vh .track with a `position: sticky; top: 0; height: 100vh`
+   stage. That pin was the direct cause of two bugs:
+
+   - The stage stuck flush to the viewport top underneath the fixed 72px nav and
+     centred its content over the full height, so as the viewport got shorter the
+     centred block rose behind the nav. Measured on the deployed site: at
+     1366x650 the eyebrow sat 67px behind the nav links; at 640px tall it was
+     completely hidden. Those are ordinary laptop viewports, not edge cases.
+   - Reserving the nav height fixed the overlap but moved the casualty to the
+     CTAs, which `overflow: hidden` then clipped off the bottom.
+
+   min-height (not height) is the point: when the copy is taller than the
+   viewport the section GROWS and the page scrolls, instead of clipping. There
+   is no height at which content can be lost now.
+
+   The nav is position:fixed and reserves nothing, so the padding does it. */
+.stage {
+  position: relative;
+  min-height: min(100svh, 940px);
+  /* --s8, not --s10: the scale is 1,2,3,4,6,8,12,16,20,24,32 and has NO 10.
+     `calc(var(--nav-h) + var(--s10))` referenced a token that does not exist,
+     which makes the calc invalid and causes the browser to DROP the whole
+     declaration - so padding-top was silently 0 and the headline kept landing
+     under the nav at short viewports. An undefined custom property fails quietly;
+     it does not warn. */
+  padding-top: calc(var(--nav-h) + var(--s8));
+  padding-bottom: var(--s20);
+  box-sizing: border-box;
+  display: grid;
+  /* `safe` IS LOAD-BEARING, NOT DECORATION.
+     With min-height + plain `center`, a grid item taller than its track
+     overflows the track SYMMETRICALLY - half above, half below - so it pushes up
+     through the top padding and back under the fixed nav. Measured at 1366x650
+     after the pin was removed: the eyebrow landed at y=0, behind the nav links,
+     which is the same bug in a new costume.
+     `safe center` centres only while the item fits and falls back to start
+     alignment the moment it does not, so content can never be pushed off the
+     top edge at any viewport height. */
+  align-items: safe center;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* The WebGL network. Decorative and aria-hidden; the hero reads without it.
+
+   It is INSET FROM THE LEFT on wide viewports so the graph occupies the empty
+   half of the composition rather than running through the headline. The first
+   version spanned the full width and its edges crossed the type, which is
+   exactly the "effect over content" failure the direction warns about. Keeping
+   the canvas itself out of the text column, rather than lowering its opacity
+   until it stops interfering, means the artwork stays legible as artwork.
+
+   This also mirrors how doyensec.com and netguru.com place hero media: BESIDE
+   the static headline, not behind it. */
+.canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  /* <canvas> IS A REPLACED ELEMENT, so width/height must be stated explicitly.
+     `width: auto` between two insets does NOT stretch it the way it would a div -
+     it resolves to the intrinsic 300x150 of the canvas attributes. Dropping the
+     explicit width to let inset size it produced a 300px-wide graph; keeping
+     width:100% while offsetting `left` pushed it 633px off-screen. Both the
+     offset and the width have to move together. */
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.85;
+
+  /* FADE THE EDGE THAT MEETS THE TEXT.
+     The copy column ends around 738px at 1440 wide and the canvas starts at 44%
+     (634px), so the leftmost links were drawn across the lede. Rather than
+     chasing the overlap with a bigger offset at every breakpoint - which breaks
+     again at the next viewport - the canvas is masked so it fades to nothing on
+     its left edge. The graph can extend as far as it likes; it simply has no
+     ink where the text is. */
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 22%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 22%);
+}
+
+@media (min-width: 60rem) {
+  .canvas {
+    left: 44%;
+    width: 56%;
+  }
+}
+
+/* Each display line of the headline is its own block. */
+.line {
+  display: block;
+}
+
+/* ---- the field: one slow copper bloom over the warm ground --------------
+   Not a gradient blob. It is a single off-centre warm light behind the type,
+   which is the "one warm light in the dark" the direction is built on. It
+   drifts slowly enough to read as atmosphere rather than as an effect. */
+.field {
+  position: absolute;
+  inset: -20%;
+  z-index: 0;
+  pointer-events: none;
+  /* A neutral lift, not a colour wash. Both radials used to be accent-tinted,
+     which with a red accent turned the entire hero into an alert state. The
+     scene's own red interceptions are the only red above the fold now, which is
+     what makes them register. */
+  background:
+    radial-gradient(
+      46rem 46rem at 72% 34%,
+      color-mix(in oklab, var(--paper-50) 7%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      34rem 34rem at 24% 76%,
+      color-mix(in oklab, var(--paper-50) 4%, transparent),
+      transparent 72%
+    );
+  filter: blur(40px);
+  animation: heroDrift 38s var(--ease-in-out) infinite alternate;
+  will-change: transform;
+}
+
+@keyframes heroDrift {
+  from {
+    transform: translate3d(-1.5%, 1%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(2%, -1.5%, 0) scale(1.08);
+  }
+}
+
+/* A hairline horizon. Gives the composition a floor without a border box. */
+.horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 18%;
+  height: 1px;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--accent-300) 38%, transparent) 35%,
+    color-mix(in oklab, var(--accent-300) 10%, transparent) 70%,
+    transparent
+  );
+}
+
+.copy {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.eyebrow {
+  color: var(--accent-300);
+  margin: 0 0 var(--s6);
+}
+
+/* ---- the three beats ----------------------------------------------------
+   All three are ALWAYS in the document and always legible. Scroll moves the
+   emphasis down them; it does not reveal them from nothing. A hero whose text
+   only exists after a scroll event is a hero that is blank to a crawler, a
+   link preview, and anyone whose script failed. */
+.headline {
+  margin: 0;
+  font-size: clamp(2rem, 7.2vw, 5rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  max-width: 18ch;
+}
+
+
+/* The inactive state is a dim, not a hide - the sentence stays readable. */
+
+/* The serif phrase. This is the site's typographic gesture: one editorial face
+   inside a grotesque headline. Rationed to narrative moments, never UI. */
+.serif {
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  /* TONAL, NOT CHROMATIC. This was var(--accent-300). When the accent was
+     copper that read as warmth; with the accent now red it read as an error
+     message across the largest type on the site. The italic serif face is
+     already a strong enough contrast against the grotesque, so the emphasis is
+     carried by the letterform and a slight tonal drop, not by hue. The accent is
+     reserved for action and state - see the note in globals.css. */
+  color: var(--paper-200);
+}
+
+/* Per-word stagger. Words are decorative duplicates - the <h1> carries an
+   unsplit aria-label and these are aria-hidden, so assistive technology hears
+   one sentence rather than a list of words. */
+
+.subhead {
+  margin: var(--s8) 0 0;
+  max-width: 54ch;
+  font-size: var(--text-lg);
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s3);
+  margin-top: var(--s8);
+}
+
+/* Scroll affordance - a hero that scrubs needs to say so. */
+@keyframes cueSweep {
+  0%,
+  100% {
+    transform: scaleX(0.4);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* ---- beat progress rail ------------------------------------------------- */
+
+/* ---- no JS + reduced motion --------------------------------------------
+   Both resolve to the same honest end state: every beat at full contrast, no
+   sticky scrub, no dead scroll past a static image. The track collapses so a
+   reader is not asked to scroll 180vh for motion that will not happen. */
+:global(.no-js) .track {
+  height: auto;
+  position: static;
+}
+:global(.no-js) .stage {
+  height: auto;
+  /* `relative`, NOT `static`. The field is absolutely positioned at inset:-20%;
+     making the stage static removes it as the field's containing block, so the
+     field resolves against an ancestor further up, escapes this element's
+     overflow:hidden and overruns the viewport - measured at 449px inside a
+     320px parent. Unsticking the stage does not require unpositioning it. */
+  position: relative;
+}
+:global(.no-js) .beat {
+  opacity: 1;
+}
+:global(.no-js) .stage {
+  padding-block: var(--s24);
+}
+:global(.no-js) .scrollCue,
+:global(.no-js) .rail {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field {
+    animation: none;
+  }
+}
+
+@media print {
+  /* Flatten the stage and drop every decorative layer. The WebGL canvas cannot
+     print anyway; the field and horizon would waste toner. */
+  .stage {
+    min-height: 0;
+    height: auto;
+    position: relative;
+  }
+  .field,
+  .horizon,
+  .canvas {
+    display: none;
+  }
+}
+
+/* =============================================================================
+   HERO ENTRANCE - one fade-up, once, on load.
+
+   A survey of 15 competitor homepages found only 2 that animate the hero
+   headline at all (monterail.com, stxnext.com) and 0 that pin or scroll-scrub
+   it. This is monterail's treatment: opacity 0 -> 1 with a 24px rise, ~600ms,
+   playing once. It is the only headline motion that appeared more than once, so
+   it is the only one with any evidence behind it.
+
+   IT IS CSS, NOT JS, AND THAT IS THE POINT. monterail ships the headline with an
+   inline `opacity:0` and raises it from JavaScript, which means a visitor whose
+   JS fails never sees the headline at all. A CSS animation cannot fail that way:
+   if the stylesheet loads the animation runs, and if it does not load the text
+   is simply there at full opacity.
+
+   `backwards` fill makes the from-state apply during the stagger delay, so
+   nothing flashes at full opacity before dropping back to start.
+
+   Under reduced motion none of this is declared, so the hero is simply static.
+   That is the preference honoured, not a shortened version of the animation.
+   ============================================================================= */
+@media (prefers-reduced-motion: no-preference) {
+  .eyebrow,
+  .headline,
+  .subhead,
+  .actions {
+    animation: heroRise var(--dur-scene, 600ms) var(--ease-out) backwards;
+  }
+  .headline { animation-delay: 70ms; }
+  .subhead  { animation-delay: 140ms; }
+  .actions  { animation-delay: 210ms; }
+}
+
+@keyframes heroRise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}

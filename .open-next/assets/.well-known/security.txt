@@ -1,0 +1,28 @@
+# Envenox vulnerability disclosure
+#
+# A security firm without a vulnerability disclosure policy is a tell. This file
+# is identity, not compliance.
+#
+# Full policy: https://envenox.com/legal/vulnerability-disclosure
+# Report a finding: https://envenox.com/report-issue
+
+Contact: mailto:security@envenox.com
+Contact: https://envenox.com/report-issue
+Expires: 2027-11-06T00:00:00.000Z
+Preferred-Languages: en
+
+# NOTE: no `Encryption:` field is published yet, deliberately. Advertising a key
+# URL that 404s is worse than publishing no key — it tells a researcher the
+# policy was written but never tested. The PGP key is pending; when it exists,
+# add `Encryption: https://envenox.com/.well-known/pgp-key.txt` above and
+# publish the key at that path in the same change.
+
+Canonical: https://envenox.com/.well-known/security.txt
+Policy: https://envenox.com/legal/vulnerability-disclosure
+Acknowledgments: https://envenox.com/legal/vulnerability-disclosure#acknowledgements
+Hiring: https://envenox.com/careers
+
+# We will acknowledge a report within one business day and give you a triage
+# decision within five. We do not require you to sign an NDA to report a finding,
+# and we will not pursue legal action against good-faith research conducted
+# within the scope described in the policy above.

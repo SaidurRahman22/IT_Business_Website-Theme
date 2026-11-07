@@ -1,0 +1,94 @@
+/* ==========================================================================
+   /partners.
+
+   The competitor research found logo walls with no text label everywhere. An
+   unlabelled mark is invisible to a crawler, to a screen reader and to a link
+   preview alike, and a partner tier is the only part a buyer can evaluate -
+   "AWS Partner" and "AWS Advanced Tier Services Partner" are not the same
+   claim. So the tier is set as readable text beside the name, at a size you
+   can actually read, and never baked into an image.
+   ========================================================================== */
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.grid {
+  display: grid;
+  gap: 0;
+  list-style: none;
+  margin: var(--s12) 0 0;
+  padding: 0;
+  border-top: 1px solid var(--border-strong);
+}
+
+.row {
+  display: grid;
+  gap: var(--s3);
+  padding: var(--s8) 0;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+  align-items: center;
+}
+@media (min-width: 768px) {
+  .row {
+    grid-template-columns: 4rem minmax(0, 18rem) minmax(0, 1fr);
+    gap: var(--s6);
+  }
+}
+
+/* The mark slot. Every partner record carries `logo: null` today, so what
+   ships is a monogram tile, not a borrowed trademark. It is the same shape a
+   real mark will occupy, and it is obviously a placeholder. */
+.mark {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  flex: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--surface);
+  color: var(--muted-strong);
+  font-family: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.name {
+  font-size: var(--text-xl);
+  margin: 0;
+  min-width: 0;
+}
+
+/* The tier, as text. This is the readable label the brief asks for: it is a
+   heading-adjacent statement, not a caption under a picture. */
+.tier {
+  margin: 0;
+  color: var(--fg);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.tierFull {
+  display: block;
+  margin-top: var(--s2);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+
+.note {
+  margin: var(--s12) 0 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  max-width: 68ch;
+}

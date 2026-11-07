@@ -1,0 +1,55 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // OpenNext compiles the Next server to a Worker. See open-next.config.ts for
+  // why this cannot be a static-assets deploy.
+  "main": ".open-next/worker.js",
+  "name": "envenox",
+  "compatibility_date": "2026-11-01",
+
+  // nodejs_compat: the Next server needs node: builtins.
+  // global_fetch_strictly_public: makes fetch() to our own hostname go out to
+  // the internet and back rather than looping inside the Worker, which is what
+  // Next's own internal fetches expect.
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+
+  // Built by `opennextjs-cloudflare build` from public/ plus Next's static
+  // output. public/_headers is copied in here and is what applies security
+  // headers to ASSET responses — see the long note in that file.
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  // Bind the apex and www straight to this Worker. custom_domain:true makes
+  // Cloudflare issue the certificate and create the DNS record itself, so no
+  // manual CNAME is needed.
+  // zone_id is stated explicitly: the OAuth login this deploys with has no
+  // zone-read scope, so Cloudflare cannot infer the zone from the hostname and
+  // fails with "Can't infer zone from route" [10082].
+  "routes": [
+    { "pattern": "envenox.com", "custom_domain": true, "zone_id": "f75ed98c73bc4eac6949d4e82cf972b6" },
+    { "pattern": "www.envenox.com", "custom_domain": true, "zone_id": "f75ed98c73bc4eac6949d4e82cf972b6" }
+  ],
+
+  // Keep a working URL while the custom domain provisions. NOTE: this is a
+  // second public origin serving the same content, so it is a duplicate-content
+  // signal to crawlers and a second surface to verify. Set it to false once the
+  // apex is live.
+  "workers_dev": true,
+
+  "observability": {
+    "enabled": true
+  }
+
+  // DELIBERATELY ABSENT:
+  //
+  // "images": { "binding": "IMAGES" } — there are ZERO next/image imports in
+  // the entire app, so images.formats in next.config.ts is dead config and the
+  // optimizer has nothing to serve. Two of the four critical RCEs patched on
+  // 2026-11-06 (GHSA-2xp9-vwfh-vxw4 via AVIF, GHSA-2464-fhr4-w9xw via SVG) lived
+  // in that optimizer, so leaving it unbound keeps a known-hostile surface out
+  // of service. Add the binding in the same change as the first next/image.
+  //
+  // "r2_buckets" / WORKER_SELF_REFERENCE — see open-next.config.ts.
+}

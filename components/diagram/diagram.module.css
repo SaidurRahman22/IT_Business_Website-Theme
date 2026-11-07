@@ -1,0 +1,784 @@
+/* ==========================================================================
+   DIAGRAM MODULE - SecureSdlcPipeline + ComparisonTable
+   --------------------------------------------------------------------------
+   Motion vocabulary: --ease-out / --ease-in-out only, --dur-micro / --dur-base
+   / --dur-scene only, distances capped at --d-entrance (32px). The only
+   properties animated anywhere in this file are opacity, translate, filter and
+   stroke-dashoffset. No hover transform, no hover scale, no hover lift -
+   hover is a colour shift.
+   Colour comes entirely from the theme contract: --bg --surface --fg --muted
+   --muted-strong --border --border-strong --accent.
+   ========================================================================== */
+
+/* ==========================================================================
+   1. PIPELINE SHELL
+   ========================================================================== */
+
+.figure {
+  position: relative; /* anchors the visually-hidden ordered list at wide */
+  margin: 0;
+  color: var(--fg);
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  margin-bottom: var(--s8);
+}
+
+.eyebrow {
+  margin: 0;
+}
+
+.lede {
+  margin: 0;
+  color: var(--muted-strong);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2) var(--s6);
+  margin: var(--s2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: var(--text-xs);
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.legendMark {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+}
+
+.legendItem[data-lane='security'] .legendMark {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.legendItem[data-lane='dev'] .legendMark {
+  border-color: var(--muted-strong);
+  background: color-mix(in srgb, var(--muted-strong) 18%, transparent);
+}
+.legendItem[data-lane='handoff'] .legendMark {
+  border: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  rotate: 45deg;
+  background: var(--accent);
+}
+
+/* ==========================================================================
+   2. THE DRAWN PIPELINE (>= 1100px)
+   Kept in lockstep with WIDE_QUERY in SecureSdlcPipeline.tsx.
+   ========================================================================== */
+
+.wire {
+  display: none;
+}
+
+@media (min-width: 1100px) {
+  .wire {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+}
+
+/* ---- static furniture ---- */
+
+.rail {
+  stroke: var(--border);
+  stroke-width: 1;
+  opacity: 0.85;
+}
+
+/* ---- the spine ---- */
+
+/* The spine carries the structure of the diagram, so it reads at --muted
+   rather than at a border weight; --border-strong is #c9c2b3 on bone and
+   #2b3446 on ink, and at 1.5px neither is legible enough to be the thing the
+   eye follows. The lane rails stay at --border, the return path takes
+   --accent, and that is the whole hierarchy. */
+.edge {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+/* ---- the lane-change stitch ---- */
+
+.handoff {
+  fill: var(--accent);
+  stroke: none;
+}
+
+/* ---- nodes ---- */
+
+.nodeDisc {
+  fill: var(--bg);
+}
+.nodeRing {
+  fill: none;
+  stroke-width: 1.5;
+}
+.stage[data-lane='security'] .nodeRing {
+  stroke: var(--accent);
+}
+.stage[data-lane='dev'] .nodeRing {
+  stroke: var(--muted-strong);
+}
+
+.nodeNum {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 14px;
+  font-variant-ligatures: none;
+  letter-spacing: -0.02em;
+  fill: var(--fg);
+}
+
+/* ---- the two lanes of caption ---- */
+
+.stageName {
+  font-family: var(--font-inter-tight), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  fill: var(--fg);
+}
+
+.stageOwner {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 12.5px;
+  font-variant-ligatures: none;
+}
+.stage[data-lane='security'] .stageOwner {
+  fill: var(--accent);
+}
+.stage[data-lane='dev'] .stageOwner {
+  fill: var(--muted-strong);
+}
+
+.stageArtefact {
+  font-size: 14px;
+  fill: var(--muted);
+}
+
+/* ---- the return path: deliberately not the spine ---- */
+
+.loop {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.loopArrow {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.loopLabel {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  fill: var(--accent);
+}
+
+/* ==========================================================================
+   3. THE ANIMATION OPT-IN
+   Default = finished. JS adds [data-animate] to start from zero; it declines
+   to under prefers-reduced-motion, so reduce and no-JS both land here.
+   ========================================================================== */
+
+.figure[data-animate='true'] .stage,
+.figure[data-animate='true'] .handoff,
+.figure[data-animate='true'] .loopArrow,
+.figure[data-animate='true'] .loopLabel,
+.figure[data-animate='true'] .step,
+.figure[data-animate='true'] .loopBracket {
+  opacity: 0;
+}
+
+.figure[data-animate='true'] .edge,
+.figure[data-animate='true'] .loop,
+.figure[data-animate='true'] .stepRailLine {
+  stroke-dasharray: var(--dash);
+  stroke-dashoffset: var(--dash);
+}
+
+/* -- lit -- */
+
+.figure[data-animate='true'] .stage[data-lit='true'] {
+  animation: slideUpMoreAndFade var(--dur-base) var(--ease-out) forwards;
+}
+
+.figure[data-animate='true'] .edgeGroup[data-lit='true'] .edge,
+.figure[data-animate='true'] .loopGroup[data-lit='true'] .loop,
+.figure[data-animate='true'] .step[data-lit='true'] .stepRailLine {
+  animation: drawStroke var(--dur-scene) var(--ease-in-out) forwards;
+}
+
+/* The stitch and the arrowhead land after the stroke that carries them. */
+.figure[data-animate='true'] .edgeGroup[data-lit='true'] .handoff {
+  animation: slideUpAndFade var(--dur-base) var(--ease-out) var(--dur-scene) forwards;
+}
+.figure[data-animate='true'] .loopGroup[data-lit='true'] .loopArrow,
+.figure[data-animate='true'] .loopGroup[data-lit='true'] .loopLabel {
+  animation: slideUpAndFade var(--dur-base) var(--ease-out) var(--dur-scene) forwards;
+}
+
+.figure[data-animate='true'] .step[data-lit='true'] {
+  animation: slideUpMoreAndFade var(--dur-base) var(--ease-out) forwards;
+}
+
+/* ==========================================================================
+   4. THE ORDERED LIST
+   At narrow widths this is the pipeline. At wide widths it is visually hidden
+   but stays in the DOM and in the accessibility tree.
+   ========================================================================== */
+
+/* BELOW 1100px THIS LIST *IS* THE PIPELINE, so it has to sit on the page grid.
+   The component is rendered inside <Section bleed>, which removes the page
+   container so the SVG can run full width; the list inherited that and ran
+   edge to edge too. These are the same three declarations .u-container uses,
+   applied here rather than by wrapping the element, because above 1100px this
+   wrapper is collapsed to a 1px visually-hidden box and a padded wrapper
+   around it would leave a stray gap in the flow. */
+.sequenceWrap {
+  position: relative; /* anchors the loop bracket */
+  width: 100%;
+  max-width: var(--container-content);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.sequence {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  padding: 0 0 var(--s8) var(--s8);
+}
+
+.step:last-child {
+  padding-bottom: var(--s4);
+}
+
+/* the node dot on the rail */
+.step::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1.5px solid var(--muted-strong);
+}
+.step[data-lane='security']::before {
+  border-color: var(--accent);
+}
+
+/* the lane-change stitch, mirrored from the wide diagram */
+.step[data-crosses='true']::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: -16px;
+  width: 7px;
+  height: 7px;
+  rotate: 45deg;
+  background: var(--accent);
+}
+
+.stepRail {
+  position: absolute;
+  left: 4.5px;
+  top: 20px;
+  bottom: -2px;
+  width: 2px;
+  height: auto;
+}
+
+.stepRailLine {
+  stroke: var(--muted);
+  stroke-width: 1;
+}
+
+.stepMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s2) var(--s3);
+  margin: 0 0 var(--s1);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
+.stepNum {
+  color: var(--muted);
+  letter-spacing: -0.02em;
+}
+
+.stepOwner {
+  color: var(--muted-strong);
+}
+.step[data-lane='security'] .stepOwner {
+  color: var(--accent);
+}
+
+.stepWhen {
+  color: var(--muted);
+}
+
+.stepName {
+  margin: 0 0 var(--s2);
+  font-family: var(--font-inter-tight), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-snug);
+  color: var(--fg);
+}
+
+.stepDetail {
+  margin: 0 0 var(--s3);
+  max-width: 54ch;
+  color: var(--muted-strong);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.stepArtefact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s2);
+  margin: 0;
+  max-width: 54ch;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.stepArtefactLabel {
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 1px var(--s2);
+  white-space: nowrap;
+}
+
+/* the loop, closed, at narrow widths: a bracket around the whole sequence */
+.loopBracket {
+  position: absolute;
+  /* Absolute offsets resolve against .sequenceWrap's PADDING box, and that
+     wrapper now carries the page gutter. `left: -10px` therefore put the
+     bracket 10px outside the wrapper entirely and needed the figure to be
+     padded to keep it on screen. Sitting it just inside the gutter instead
+     keeps it beside the rail and lets the list align to the page grid. */
+  left: calc(var(--gutter) - 10px);
+  top: 12px;
+  bottom: 12px;
+  width: 10px;
+  border: 1px solid var(--accent);
+  border-right: 0;
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+  pointer-events: none;
+}
+
+.figure[data-animate='true'] .loopBracket[data-lit='true'] {
+  animation: slideUpAndFade var(--dur-base) var(--ease-out) var(--dur-scene) forwards;
+}
+
+@media (min-width: 1100px) {
+  .sequenceWrap {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+  .loopBracket {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   5. THE LOOP NOTE - the sentence the diagram is an illustration of
+   ========================================================================== */
+
+.loopNote {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s3);
+  margin: var(--s8) 0 0;
+  padding: var(--s4) var(--s4) var(--s4) var(--s4);
+  max-width: 72ch;
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--muted-strong);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.loopNoteIcon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 3px;
+  color: var(--accent);
+}
+
+.loopNoteStrong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+@media (min-width: 1100px) {
+  .loopNote {
+    margin-top: var(--s4);
+  }
+}
+
+/* THE FIGURE NO LONGER CARRIES PADDING.
+   It used to take `padding-left: 12px` below 1100px purely so the loop
+   bracket, which hangs 10px outside the step list, was not clipped. That 12px
+   then sat UNDER .sequenceWrap's own gutter, so the narrow-width step list
+   started 12px to the right of the section heading above it: measured 44px
+   against the heading's 32px at a 900px viewport. Only below 1100px, because
+   above it .u-container centres and absorbs the offset, which is exactly the
+   kind of bug that survives a desktop-only check.
+   The bracket now sits INSIDE the gutter instead (see .loopBracket), so the
+   padding has no job and the list lines up with the heading at every width. */
+
+/* ==========================================================================
+   6. COMPARISON TABLE
+   A real <table>. At narrow widths it becomes a card stack via display
+   changes, which is exactly what strips a table of its native semantics -
+   so the roles are declared explicitly in the markup at every width, and
+   every cell carries data-label so the header association survives.
+   ========================================================================== */
+
+.tableWrap {
+  position: relative;
+  margin: 0;
+  color: var(--fg);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: var(--text-sm);
+}
+
+.tableCaption {
+  caption-side: top;
+  margin-bottom: var(--s6);
+  max-width: 72ch;
+  color: var(--muted-strong);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  text-align: left;
+}
+
+.colHead {
+  padding: var(--s3) var(--s4);
+  border-bottom: 1px solid var(--border-strong);
+  vertical-align: bottom;
+  font-weight: 500;
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.colHeadInner {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+}
+
+.colHeadIcon {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+.colHead[data-col='joined'] {
+  color: var(--accent);
+}
+
+.rowHead {
+  width: 22%;
+  padding: var(--s4);
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  font-weight: 600;
+  font-size: var(--text-base);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-snug);
+  color: var(--fg);
+}
+
+.cell {
+  padding: var(--s4);
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  color: var(--muted-strong);
+  line-height: var(--leading-normal);
+}
+
+.cell[data-col='split'] {
+  color: var(--muted);
+}
+
+.cell[data-col='joined'] {
+  color: var(--fg);
+  background: var(--surface);
+}
+
+.row {
+  transition: background-color var(--dur-micro) var(--ease-out);
+}
+/* Hover is a colour shift. Nothing moves. */
+.row:hover .cell[data-col='joined'] {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+}
+
+.cellLabel {
+  display: none;
+}
+
+.tableNote {
+  margin: var(--s4) 0 0;
+  max-width: 72ch;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+/* ---- card stack ---- */
+
+@media (max-width: 767.98px) {
+  .table,
+  .table > caption,
+  .table > tbody,
+  .table > thead,
+  .table > tbody > tr,
+  .table > tbody > tr > th,
+  .table > tbody > tr > td {
+    /* `caption` must be in this list: an orphaned `display: table-caption`
+       inside a `display: block` table gets wrapped in an anonymous table box
+       and shrinks to a one-word column. */
+    display: block;
+  }
+
+  /* The column headers move into each cell as data-label; the visual header
+     row would be a duplicate, so it is hidden from sight and from AT. */
+  .table > thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .table > tbody > tr {
+    margin-bottom: var(--s4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .rowHead {
+    width: auto;
+    padding: var(--s4) var(--s4) var(--s3);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    font-size: var(--text-lg);
+  }
+
+  .cell {
+    border-bottom: 1px solid var(--border);
+  }
+  .cell:last-child {
+    border-bottom: 0;
+  }
+  .cell[data-col='joined'] {
+    background: transparent;
+    border-left: 2px solid var(--accent);
+  }
+  .row:hover .cell[data-col='joined'] {
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+  }
+
+  .cellLabel {
+    display: block;
+    margin-bottom: var(--s1);
+    font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .cell[data-col='joined'] .cellLabel {
+    color: var(--accent);
+  }
+
+  .tableCaption {
+    margin-bottom: var(--s4);
+    font-size: var(--text-sm);
+  }
+}
+
+/* ==========================================================================
+   7. REDUCED MOTION
+   globals.css already collapses every duration; this makes the *end state*
+   unambiguous so a stage that never enters view can never be stranded.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .figure[data-animate='true'] .stage,
+  .figure[data-animate='true'] .handoff,
+  .figure[data-animate='true'] .loopArrow,
+  .figure[data-animate='true'] .loopLabel,
+  .figure[data-animate='true'] .step,
+  .figure[data-animate='true'] .loopBracket {
+    opacity: 1 !important;
+    translate: none !important;
+    animation: none !important;
+  }
+
+  .figure[data-animate='true'] .edge,
+  .figure[data-animate='true'] .loop,
+  .figure[data-animate='true'] .stepRailLine {
+    stroke-dasharray: none !important;
+    stroke-dashoffset: 0 !important;
+    animation: none !important;
+  }
+}
+
+/* ==========================================================================
+   8. PRINT - the pipeline is in the proposal deck
+   ========================================================================== */
+
+@media print {
+  .figure[data-animate='true'] .stage,
+  .figure[data-animate='true'] .handoff,
+  .figure[data-animate='true'] .loopArrow,
+  .figure[data-animate='true'] .loopLabel,
+  .figure[data-animate='true'] .step,
+  .figure[data-animate='true'] .loopBracket {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+  .figure[data-animate='true'] .edge,
+  .figure[data-animate='true'] .loop,
+  .figure[data-animate='true'] .stepRailLine {
+    stroke-dasharray: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+}
+
+/* ==========================================================================
+   LOCAL KEYFRAMES
+
+   These are copies of the shared motion vocabulary in app/globals.css, and
+   they have to be copies.
+
+   CSS Modules rewrite every animation-name in this file to a locally scoped
+   hash, whether or not the keyframes are defined here. A bare reference to a
+   keyframe that lives in globals.css therefore compiles to a name that exists
+   nowhere, the animation silently never runs, and because these rules pair
+   with a hidden start state (opacity: 0, stroke-dashoffset) the element stays
+   invisible forever. That is exactly what happened to the Secure SDLC pipeline
+   on /services/devsecops.
+
+   `:global(name)` inside an animation value is NOT an option: this toolchain
+   rejects it outright with "Double colon" at build time.
+
+   scripts/check-animations.mjs enforces that every animation-name used in a
+   *.module.css is defined in that same file. Keep these in step with
+   globals.css if the vocabulary changes.
+   ========================================================================== */
+
+@keyframes slideUpMoreAndFade {
+  0% {
+    opacity: 0;
+    translate: 0 10px;
+  }
+  100% {
+    opacity: 1;
+    translate: 0;
+  }
+}
+
+@keyframes drawStroke {
+  0% {
+    stroke-dashoffset: var(--dash);
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes slideUpAndFade {
+  0% {
+    opacity: 0;
+    translate: 0 2px;
+  }
+  100% {
+    opacity: 1;
+    translate: 0;
+  }
+}

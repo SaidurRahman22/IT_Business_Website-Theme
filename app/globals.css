@@ -1,0 +1,895 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   ENVENOX DESIGN SYSTEM
+   Tokens are the contract. PART 2 (colour, type, space) + PART 3 (motion).
+   Nothing in this codebase may invent a duration, an easing or a distance.
+   ============================================================================ */
+
+@theme {
+  /* ========================================================================
+     "FORGE" - see DESIGN-DIRECTION.md
+
+     Token NAMES are unchanged on purpose. ~90 files consume --ink-900 and
+     friends, so re-pointing the values here re-skins the entire site from one
+     file; renaming them would have meant touching every one.
+
+     PALETTE REVISED 2026-11-07, from a survey of 15 competitor homepages with
+     the hex values read out of their stylesheets.
+
+     The previous ramp was warm brown (#14110f ground, #f5f1e8 bone) with copper
+     as the accent. Warm ground is defensible - doyensec.com runs a full sepia
+     system (#2c271f ground, #a39a8b text) and monterail.com pairs warm cream
+     with dark warm brown bands. The accent was the actual fault: NONE of the 15
+     uses copper as its accent, and for a reason. Copper sits a few degrees from
+     a warm ground, so it cannot separate from it, which left the site with no
+     colour capable of directing attention.
+
+     The ground is now near-neutral charcoal and clean paper, in the band
+     trailofbits.com (#0f1011 / #fafafa), atredis.com (#141414) and
+     bishopfox.com (#141414) occupy. The accent is ONE saturated red, which is
+     the modal hue in the survey: 6 of 15 (trailofbits #d00000, atredis #480000,
+     praetorian #e63946, thoughtworks #bd4257, monterail #f50031, bishopfox
+     #e40505). 6 of the 15 use exactly one accent hue; the sites running 6 to 8
+     (nccgroup, netguru) read as marketing material rather than practice.
+
+     Every pairing below was measured, not assumed. See the ratios inline.
+     ======================================================================== */
+
+  /* ---- NEUTRALS - near-neutral charcoal ---- */
+  --color-ink-900: #0F1113; /* ground. paper-50 on it = 18.1:1 */
+  --color-ink-800: #16181B; /* elevated surface */
+  --color-ink-700: #23262A; /* hairline */
+  --color-ink-600: #343840;
+  --color-ink-500: #4E535C;
+
+  --color-paper-50: #FAFAFA; /* ground for light sections */
+  --color-paper-100: #F0F1F2;
+  --color-paper-200: #DFE1E4;
+  --color-paper-300: #C3C7CC;
+  --color-paper-600: #5A6068; /* 6.08:1 on paper-50 - measured */
+
+  /* ---- BRAND ACCENT - one red. ---- */
+  /* There is exactly ONE accent hue, matching the 6 single-accent sites in the
+     survey. It is used on CTA fill, active rules and the intercepted packet in
+     the hero scene. NEVER on headings: the single-accent sites all restrict it
+     to action and state, and a red heading reads as an error message. */
+  --color-accent-300: #FF5A4E; /* on dark grounds - 6.15:1 on ink-900, measured */
+  --color-accent-500: #E11D2E; /* the brand copper */
+  --color-accent-600: #A5111E; /* on light grounds - 5.1:1 with paper-50 on it */
+
+  /* ---- SEMANTIC - PRODUCT UI AND SEVERITY ONLY. NEVER BRAND CHROME. ----
+     Shifted to clear copper's hue. The old ramp ran amber (#F5A524) and orange
+     (#F76808), both of which now sit on top of the brand accent and would make
+     "medium severity" and "primary action" the same colour. High goes redder,
+     medium goes to a true yellow. */
+  --color-signal-critical: #e5484d;
+  --color-signal-high: #e04a2f; /* vermilion - reads red, not copper */
+  --color-signal-medium: #e3b505; /* true yellow, not amber */
+  --color-signal-low: #3e9b4f;
+  --color-signal-info: #3b82f6;
+
+  /* ---- TYPE SCALE ---- */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+  --text-4xl: 3rem;
+  --text-5xl: 4rem;
+  --text-6xl: 5.5rem;
+
+  /* ---- SPACING ---- */
+  --spacing-s1: 4px;
+  --spacing-s2: 8px;
+  --spacing-s3: 12px;
+  --spacing-s4: 16px;
+  --spacing-s6: 24px;
+  --spacing-s8: 32px;
+  --spacing-s12: 48px;
+  --spacing-s16: 64px;
+  --spacing-s20: 80px;
+  --spacing-s24: 96px;
+  --spacing-s32: 128px;
+
+  /* ---- RADIUS ---- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* ---- CONTAINER ---- */
+  --container-content: 1280px;
+}
+
+:root {
+  /* ---- NEUTRALS (raw, for non-Tailwind consumers) - must mirror @theme ---- */
+  --ink-900: #0F1113;
+  --ink-800: #16181B;
+  --ink-700: #23262A;
+  --ink-600: #343840;
+  --ink-500: #4E535C;
+  --paper-50: #FAFAFA;
+  --paper-100: #F0F1F2;
+  --paper-200: #DFE1E4;
+  --paper-300: #C3C7CC;
+  --paper-600: #5A6068;
+  --accent-300: #FF5A4E;
+  --accent-500: #E11D2E;
+  --accent-600: #A5111E;
+  --signal-critical: #e5484d;
+  --signal-high: #e04a2f;
+  --signal-medium: #e3b505;
+  --signal-low: #3e9b4f;
+  --signal-info: #3b82f6;
+
+  /* Read by the hero WebGL scene (components/hero/network-scene.ts) for the
+     intercepted-packet colour. Aliased rather than a new hue: a blocked packet
+     and a critical finding are the same idea and must not disagree. */
+  --danger-500: var(--signal-critical);
+
+  /* ---- MOTION: EASINGS ---- */
+  --ease-out: cubic-bezier(0, 0, 0.2, 1); /* THE DEFAULT - ~60% of all motion */
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1); /* positional moves, indicators */
+  --ease-theme: cubic-bezier(0, 0, 0.6, 1); /* palette changes only */
+  --ease-carousel: cubic-bezier(0.76, 0, 0.24, 1); /* large slide transitions only */
+
+  /* ---- MOTION: DURATIONS ---- */
+  --dur-micro: 0.15s; /* hover, focus, toggles */
+  --dur-base: 0.3s; /* THE HOUSE TEMPO */
+  --dur-scene: 0.5s; /* theme changes, media cross-fades */
+  /* Large slide transitions ONLY - the measured partner of --ease-carousel,
+     which exists for nothing else. Added because the pair was incomplete: a
+     special-purpose easing with no duration of its own forces either a literal
+     or a mismatch with a general-purpose token, and cubic-bezier(.76,0,.24,1)
+     was tuned at this length - it reads rushed at 0.5s. This is also the
+     system's ceiling: nothing anywhere exceeds 0.6s except the hero, which is
+     scroll-bound rather than timed. */
+  --dur-carousel: 0.6s;
+
+  /* ---- MOTION: DISTANCES - the complete vocabulary. Invent no others. ---- */
+  --d-tooltip: 2px;
+  --d-panel: 5px;
+  --d-content: 10px;
+  --d-entrance: 32px;
+
+  /* ---- SPACING (raw) ---- */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s6: 24px;
+  --s8: 32px;
+  --s12: 48px;
+  --s16: 64px;
+  --s20: 80px;
+  --s24: 96px;
+  --s32: 128px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  --leading-tight: 1.1;
+  --leading-snug: 1.25;
+  --leading-normal: 1.6;
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+
+  --gutter: 16px;
+  --nav-h: 72px;
+
+  color-scheme: dark;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 32px;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 48px;
+  }
+}
+
+/* ============================================================================
+   THEMES - sections declare one; the whole palette cross-fades (PART 3.4)
+   The dark theme is the security act. The light theme is the software craft act.
+   ============================================================================ */
+
+.theme-dark {
+  --bg: var(--ink-900);
+  --surface: var(--ink-800);
+  --fg: var(--paper-50);
+  --muted: #9AA1AA; /* warm. 6.4:1 on ink-900 */ /* raised from --ink-500 (#4A5468 = 3.0:1, FAILS AA) */
+  --muted-strong: var(--paper-200);
+  --border: var(--ink-700);
+  --border-strong: var(--ink-600);
+  --accent: var(--accent-300);
+  --accent-fg: var(--ink-900);
+  color-scheme: dark;
+}
+
+.theme-light {
+  --bg: var(--paper-50);
+  --surface: var(--paper-100);
+  --fg: var(--ink-900);
+  --muted: var(--paper-600); /* #5A6172 on #F7F5F1 = 6.4:1 PASS */
+  --muted-strong: var(--ink-800);
+  --border: var(--paper-200);
+  --border-strong: var(--paper-300);
+  /* --accent-600 (#4452D8), NOT --accent-500 (#5B6CFF). This is the light
+     theme's WCAG failure the brief warned about - "the light theme is where
+     these systems usually fail". --accent-fg (#F7F5F1) on --accent-500 measures
+     **3.83:1**, under the 4.5:1 floor, and that pair is the label on every
+     primary button in every light band. It is not large text: the largest
+     button sets its label at 16px/500, where the large-text allowance starts at
+     18.66px bold.
+
+     Lightening the foreground does not rescue it - pure #FFFFFF on #5B6CFF is
+     only 4.17:1, so the accent itself has to move. --accent-600 gives 5.59:1.
+     --accent also drives the focus ring, which the same change improves. */
+  --accent: var(--accent-600);
+  --accent-fg: var(--paper-50);
+  color-scheme: light;
+}
+
+/* theme-deep sits one step up from theme-dark: its --bg IS theme-dark's
+   --surface, which is what makes it useful for a band that should read as
+   elevated without changing palette.
+
+   --border was --ink-700, the same value as --surface. A hairline drawn on an
+   elevated field was therefore invisible, which silently flattened any dense
+   component - a 14-row console rendered as one slab. --border now steps to
+   --ink-600 so it separates from BOTH --bg and --surface, and --border-strong
+   steps above it. Found by rendering the product consoles in all three themes;
+   it is not visible by reading the token table. */
+.theme-deep {
+  --bg: var(--ink-800);
+  --surface: var(--ink-700);
+  --fg: var(--paper-50);
+  --muted: #9AA1AA; /* warm. 6.4:1 on ink-900 */
+  --muted-strong: var(--paper-200);
+  --border: var(--ink-600);
+  --border-strong: #4a3f35;
+  --accent: var(--accent-300);
+  --accent-fg: var(--ink-900);
+  color-scheme: dark;
+}
+
+.transition-theme {
+  transition:
+    color var(--dur-scene) var(--ease-theme),
+    background-color var(--dur-scene) var(--ease-theme),
+    border-color var(--dur-scene) var(--ease-theme);
+}
+
+/* ============================================================================
+   BASE
+   ============================================================================ */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--border, var(--ink-700));
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--nav-h) + var(--s4));
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    background: var(--ink-900);
+    color: var(--paper-50);
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-inter-tight), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--accent-500);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent, var(--accent-500));
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  svg {
+    display: block;
+  }
+}
+
+/* ============================================================================
+   LAYOUT UTILITIES
+   ============================================================================ */
+
+.u-container {
+  width: 100%;
+  max-width: var(--container-content);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.u-section {
+  padding-block: var(--s24);
+}
+@media (min-width: 768px) {
+  .u-section {
+    padding-block: var(--s32);
+  }
+}
+.u-section-tight {
+  padding-block: var(--s16);
+}
+@media (min-width: 768px) {
+  .u-section-tight {
+    padding-block: var(--s20);
+  }
+}
+
+.u-serif {
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.08;
+}
+
+.u-mono {
+  font-family: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  font-variant-ligatures: none;
+  font-feature-settings: "tnum" 1;
+}
+
+.u-measure {
+  max-width: 68ch;
+}
+
+.u-eyebrow {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.u-tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+.u-rule {
+  height: 1px;
+  background: var(--border);
+}
+
+/* Visually hidden, still in the accessibility tree and still focusable.
+   Requested by more than one agent after each had defined its own local copy.
+
+   `clip-path: inset(50%)` rather than the old `clip: rect(...)`, and NOT
+   `display: none` / `visibility: hidden`, both of which remove the element
+   from the a11y tree entirely - which is the opposite of the intent.
+
+   ⚠ An absolutely positioned element is only clipped by an ancestor's overflow
+   when that ancestor is in its containing-block chain. A `translate` on an
+   ancestor (every `[data-reveal]` has one) makes THAT element the containing
+   block, so text hidden this way can escape a scroller and silently widen the
+   page. Give the clipping container `position: relative`. This cost one real
+   930px horizontal overflow at 390px before it was found. */
+.u-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip link.
+   No transition, deliberately. Animating it broke two of our own rules at once:
+   it transitioned `top` (a layout property), over ~96px (three times the 32px
+   ceiling). But the real argument is behavioural rather than formal - a keyboard
+   user pressing Tab on page load wants the skip link NOW, and a 300ms slide is
+   300ms of a control that is focused but not yet legible. Instant is correct. */
+.u-skip {
+  position: absolute;
+  left: var(--s4);
+  top: var(--s4);
+  z-index: 100;
+  padding: var(--s3) var(--s4);
+  background: var(--accent-500);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  /* Hidden without being removed from the a11y tree or the tab order. */
+  clip-path: inset(50%);
+  opacity: 0;
+  pointer-events: none;
+}
+.u-skip:focus,
+.u-skip:focus-visible {
+  clip-path: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Link underline via background-size on a gradient (PART 3.6) */
+.u-link {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size var(--dur-micro) var(--ease-out);
+  padding-bottom: 1px;
+}
+.u-link:hover,
+.u-link:focus-visible {
+  background-size: 100% 1px;
+}
+
+/* ============================================================================
+   TEXTURE - animated grain (PART 2.4). Non-negotiable for dark fields.
+   ============================================================================ */
+
+.grain {
+  position: relative;
+  isolation: isolate;
+}
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image: url("/img/noise.png");
+  background-size: 128px 128px;
+  opacity: 0.04;
+  animation: grain 8s steps(10) infinite;
+}
+.theme-light .grain::after {
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+}
+
+@keyframes grain {
+  0% {
+    background-position: 0 0;
+  }
+  10% {
+    background-position: -5% -10%;
+  }
+  20% {
+    background-position: -15% 5%;
+  }
+  30% {
+    background-position: 7% -25%;
+  }
+  40% {
+    background-position: 20% 25%;
+  }
+  50% {
+    background-position: -25% 10%;
+  }
+  60% {
+    background-position: 15% 5%;
+  }
+  70% {
+    background-position: 0 15%;
+  }
+  80% {
+    background-position: 25% 35%;
+  }
+  90% {
+    background-position: -10% 10%;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+/* ============================================================================
+   KEYFRAME LIBRARY (PART 3.2) - implement all of these, invent none
+   ============================================================================ */
+
+/* THE SIGNATURE MOVE - every media/asset swap. Content defocuses, never fades flat. */
+@keyframes fadeOutBlur {
+  0% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(4px);
+  }
+}
+@keyframes fadeInBlur {
+  0% {
+    opacity: 0;
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* Tab / panel state machine. `visibility` animates alongside opacity - that is
+   what keeps hidden panels out of the tab order and the a11y tree. */
+@keyframes fadeInTabTranslate {
+  0% {
+    opacity: 0;
+    visibility: hidden;
+    translate: 0 5px;
+  }
+  100% {
+    opacity: 1;
+    visibility: visible;
+    translate: 0;
+  }
+}
+@keyframes fadeOutTabTranslate {
+  0% {
+    opacity: 1;
+    visibility: visible;
+    translate: 0;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+    translate: 0 -5px;
+  }
+}
+
+/* Graduated micro-distances */
+@keyframes slideUpAndFade {
+  0% {
+    opacity: 0;
+    translate: 0 2px;
+  }
+  100% {
+    opacity: 1;
+    translate: 0;
+  }
+}
+@keyframes slideDownAndFade {
+  0% {
+    opacity: 0;
+    translate: 0 -2px;
+  }
+  100% {
+    opacity: 1;
+    translate: 0;
+  }
+}
+@keyframes slideUpMoreAndFade {
+  0% {
+    opacity: 0;
+    translate: 0 10px;
+  }
+  100% {
+    opacity: 1;
+    translate: 0;
+  }
+}
+
+/* Overlays - rotateX gives menus a subtle 3D hinge */
+@keyframes scaleIn {
+  0% {
+    opacity: 0;
+    transform: rotateX(-10deg) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: rotateX(0) scale(1);
+  }
+}
+@keyframes scaleOut {
+  0% {
+    opacity: 1;
+    transform: rotateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: rotateX(-10deg) scale(0.9);
+  }
+}
+
+/* Accordion - Radix measured height. The one permitted height animation. */
+@keyframes collapseDown {
+  0% {
+    height: 0;
+  }
+  100% {
+    height: var(--radix-accordion-content-height);
+  }
+}
+@keyframes collapseUp {
+  0% {
+    height: var(--radix-accordion-content-height);
+  }
+  100% {
+    height: 0;
+  }
+}
+
+/* Deliberate entrance - the only 32px move in the system */
+@keyframes assetEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes assetExit {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-32px);
+  }
+}
+
+/* Number roller - old value exits up, new enters from below */
+@keyframes outUp {
+  100% {
+    transform: translateY(-100%);
+  }
+}
+@keyframes inFromBelow {
+  0% {
+    transform: translateY(100%);
+  }
+}
+
+/* Infinite marquee */
+@keyframes marquee {
+  100% {
+    translate: calc(-50% - var(--gap) / 2) 0;
+  }
+}
+
+/* Mask-driven shimmer - animates mask-position, no extra DOM */
+@keyframes shine {
+  0% {
+    mask-position: 0% center;
+  }
+  100% {
+    opacity: 1;
+    mask-position: -120% center;
+  }
+}
+
+/* Clip wipe */
+@keyframes wipeOut {
+  0% {
+    clip-path: inset(0);
+  }
+  100% {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+/* SVG stroke draw - the DevSecOps pipeline (PART 8.5) */
+@keyframes drawStroke {
+  0% {
+    stroke-dashoffset: var(--dash);
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Indeterminate ring for the clip loading state (PART 5.3) */
+@keyframes ringSpin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Caret for the terminal-style blocks */
+@keyframes caretBlink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ============================================================================
+   SCROLL REVEALS (PART 3.3) - slideUpMoreAndFade, --dur-base, --ease-out,
+   fire once, stagger 60ms capped at 5 items.
+   ============================================================================ */
+
+[data-reveal] {
+  opacity: 0;
+  translate: 0 10px;
+}
+[data-reveal][data-revealed="true"] {
+  animation: slideUpMoreAndFade var(--dur-base) var(--ease-out) forwards;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+/* No-JS: content must be visible, never stuck at opacity 0.
+   `.no-js` is on <html> by default and removed by an inline script. */
+.no-js [data-reveal] {
+  opacity: 1;
+  translate: 0;
+  animation: none;
+}
+
+/* ============================================================================
+   MARQUEE - masked edges, pauses on hover and focus-within
+   ============================================================================ */
+
+.marquee {
+  --gap: var(--s12);
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+/* NO `padding-right` here - deliberately. The `marquee` keyframe translates
+   `calc(-50% - var(--gap) / 2)`, which is exact for 2N uniformly-gapped flex
+   items with NO trailing padding: the track is 2W + (2N-1)G wide, so one full
+   set plus its gap is 50% + G/2. Adding `padding-right: var(--gap)` makes the
+   track 2(W + NG) wide, at which point the correct translate is a plain -50%
+   and the -G/2 term over-shifts by half a gap, so the loop visibly jumps every
+   cycle. Change one and you must change the other. */
+.marquee__track {
+  display: flex;
+  gap: var(--gap);
+  flex-shrink: 0;
+  min-width: 100%;
+  align-items: center;
+  animation: marquee var(--marquee-dur, 46s) linear infinite;
+}
+.marquee:hover .marquee__track,
+.marquee:focus-within .marquee__track {
+  animation-play-state: paused;
+}
+
+/* ============================================================================
+   RADIX PANEL STATE MACHINE
+   ============================================================================ */
+
+[data-radix-tabs-content][data-state="active"] {
+  animation: fadeInTabTranslate var(--dur-base) var(--ease-out);
+}
+
+.acc-content[data-state="open"] {
+  animation: collapseDown var(--dur-base) var(--ease-out);
+}
+.acc-content[data-state="closed"] {
+  animation: collapseUp var(--dur-base) var(--ease-out);
+}
+
+/* ============================================================================
+   REDUCED MOTION - the full path (PART 13). The page must look deliberate,
+   not broken: reveals resolve to their end state, nothing animates.
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .grain::after {
+    animation: none;
+  }
+  .marquee__track {
+    animation: none;
+    translate: 0;
+  }
+  .marquee {
+    overflow-x: auto;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+  [data-reveal] {
+    opacity: 1 !important;
+    translate: 0 !important;
+  }
+}
+
+/* ============================================================================
+   PRINT - the sample report and case studies get read on paper
+   ============================================================================ */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .grain::after {
+    display: none;
+  }
+
+  /* Printing does not scroll, so no IntersectionObserver ever fires and every
+     section the reader had not yet reached prints BLANK. Tolerable nowhere, and
+     actively damaging on /trust and /sample-report - the two documents a
+     procurement reviewer is expected to print and file. Force the end state. */
+  [data-reveal] {
+    opacity: 1 !important;
+    translate: none !important;
+    animation: none !important;
+  }
+
+  /* A marquee on paper is a row of logos, not a scroller. */
+  .marquee {
+    overflow: visible;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+  .marquee__track {
+    animation: none;
+    flex-wrap: wrap;
+  }
+
+  /* Keep a section from being split across a page break where it reads as one
+     unit. Sections opt in by carrying the class; this is the default for the
+     document-like pages rather than a blanket rule that would create orphans. */
+  .u-print-keep {
+    break-inside: avoid-page;
+  }
+
+  a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.85em;
+    word-break: break-all;
+  }
+}

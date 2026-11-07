@@ -1,0 +1,60 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // PRODUCTION — envenox.com
+  //
+  // STATIC ASSETS ONLY. There is deliberately NO "main", so no Worker script is
+  // uploaded and no Worker code ever runs. Cloudflare serves files from the
+  // assets layer directly.
+  //
+  // WHY, in one paragraph: this was an OpenNext Worker running the Next server.
+  // Rendering app/page.tsx cost 205ms of CPU, exceeded the Workers Free CPU
+  // allowance, and Cloudflare killed the isolate. A killed isolate then hung
+  // every subsequent request for ~55s, which from outside looked like
+  // ERR_TIMED_OUT with no logs. It took envenox.com down on 2026-11-06. Static
+  // files consume no CPU allowance at all — which is precisely why the previous
+  // static holding page served for months without incident.
+  // Full diagnosis, including the hypotheses that were wrong, in MEMORY.md.
+  "name": "envenox",
+  "account_id": "01e31f4fe3b3891a62a2bee09b76285f",
+  "compatibility_date": "2026-11-01",
+
+  "assets": {
+    // `next build` with output:'export' writes here. Run
+    // `node scripts/post-export.mjs` afterwards — npm run build does both.
+    "directory": "out",
+
+    // Serve out/404.html for unmatched paths, WITH a 404 status. Without this
+    // Cloudflare returns its own bare 404 and the site's styled not-found page,
+    // navigation and incident hotline are never shown.
+    "not_found_handling": "404-page",
+
+    // Next emits /about/leadership.html, not /about/leadership/index.html. This
+    // serves the extensionless URL from that file without redirecting, keeping
+    // every canonical and sitemap URL exactly as generated.
+    "html_handling": "auto-trailing-slash"
+  },
+
+  // The apex is live here, so the duplicate workers.dev origin is switched off:
+  // it is a second public copy of the same content and a duplicate-content
+  // signal to crawlers.
+  "workers_dev": false,
+
+  "observability": {
+    "enabled": true
+  }
+
+  // NO "routes" BLOCK, ON PURPOSE.
+  //
+  // envenox.com and www.envenox.com are ALREADY attached to this Worker name,
+  // server-side, with certificates issued. A deploy to this name inherits them.
+  // Re-declaring them as custom_domain routes needs zone-level permissions the
+  // deploy token does not have and fails with "Can't infer zone from route"
+  // [10082].
+  //
+  // THE CORRESPONDING TRAP: because the attachment lives server-side against the
+  // NAME, omitting `routes` does NOT protect the live site. Any deploy to the
+  // name "envenox" replaces what visitors see. To test a change first, deploy
+  // with -c wrangler.static.jsonc, which uses the name "envenox-next" and its
+  // own workers.dev URL.
+}
