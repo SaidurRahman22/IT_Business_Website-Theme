@@ -1,8 +1,9 @@
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { enquiryFields } from '@/lib/contact'
+import { site } from '@/lib/site'
 import { Button } from '@/components/ui/Button'
-import { ErrorSummary, FormField, FormStyles } from './Fields'
+import { ErrorSummary, FormField, FormStyles, Honeypot } from './Fields'
 import { decodeErrors, decodeValues } from './validate'
 
 /**
@@ -46,11 +47,12 @@ export function EnquiryForm({ returnPath, params, submitLabel, note }: EnquiryFo
   return (
     <>
       <FormStyles />
-      {/* STATIC EXPORT: no server to POST to, so this is a GET to /thank-you.
-          Field values are not submitted, see the SUBMITS_VALUES note in
-          Fields.tsx. Works with scripting disabled. */}
-      <form className="frm" action="/thank-you" method="get">
-        <input type="hidden" name="from" value="enquiry" />
+      {/* POSTs to the envenox-forms Worker, which relays it over SMTP to the
+          admin mailbox and then 303s the visitor to /thank-you. A plain form
+          POST, so it works with scripting disabled. */}
+      <form className="frm" action={site.forms.endpoint} method="post">
+        <input type="hidden" name="form" value="enquiry" />
+        <Honeypot />
         {/* Where a validation failure bounces back to. Validated against an
             allowlist in the action, never used as a raw redirect target. */}
         <input type="hidden" name="_return" value={returnPath} />

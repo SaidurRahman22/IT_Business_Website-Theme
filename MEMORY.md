@@ -1591,3 +1591,12 @@ Writing `:active` inside a CSS comment in Button.tsx terminated the JS
 template literal and produced four TS1005 errors. Same failure as the
 AdversaryLoop CSS comment earlier the same day. **No backticks in any CSS
 comment that lives inside a template literal.** Use double quotes.
+
+## 2026-11-11 · Invoice template (`invoice-template/`)
+Built the Envenox invoice pad: `invoice.html` -> PDF via Playwright (`scripts/build_pdf.py`),
+editable Word via python-docx (`scripts/build_docx.py`, data in the `D = {...}` block).
+Wordmark: lowercase `envenox`, Inter Tight 800, -0.045em, red `x` (#E11D2E); PNGs in `assets/`.
+First invoice: ENX-INV-2026-001, Bandeasy (Tangail), BDT 10,000 start-up advance, due 18 Nov 2026.
+Payment details and Notes & terms sections were removed at the user's request.
+Gotchas: no soffice/pdftoppm on this box, so verify the .docx with Word COM `ExportAsFixedFormat` + PyMuPDF.
+python-docx needs `compatibilityMode=15` or Word shifts tables left by their first cell margin.

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ArrowRight, Mail, MapPin, Phone } from 'lucide-react'
 import { siGithub, siX } from 'simple-icons'
 import { footerNav, legalNav, site } from '@/lib/site'
+import { Honeypot } from '@/app/contact/_shared/Fields'
 import { BrandIcon, type BrandMark } from '@/components/ui/BrandIcon'
 
 /**
@@ -306,15 +307,19 @@ export function Footer() {
                 STATIC EXPORT: there is no server to POST to. This is a GET form
                 to /thank-you, which still works with scripting disabled.
 
-                The email input deliberately has NO `name`, so the address is
-                never placed in a URL (URLs leak into browser history, Referer
-                headers and access logs). Nothing consumes the address today —
-                see the note in README/MEMORY, so omitting it loses nothing and
-                is strictly more private. HTML5 `required` + type="email" still
-                validate the field before submission.
+                The email input previously had NO `name`, because under the old
+                GET form the address would have landed in a URL and from there
+                into browser history, Referer headers and access logs.
+
+                2026-11-08: this is a POST to the envenox-forms Worker, so the
+                value travels in the request body and none of that applies. The
+                name is required: without it the field is never transmitted and
+                the Worker rejects every subscription for a missing email. That
+                is exactly what happened on the first live test.
               */}
-              <form className="foot__form" action="/thank-you" method="get">
-                <input type="hidden" name="from" value="newsletter" />
+              <form className="foot__form" action={site.forms.endpoint} method="post">
+                <input type="hidden" name="form" value="newsletter" />
+                <Honeypot />
                 <input type="hidden" name="status" value="pending-double-opt-in" />
                 <label className="foot__form-label" htmlFor="footer-newsletter-email">
                   Email address
@@ -323,6 +328,7 @@ export function Footer() {
                   <input
                     className="foot__input"
                     id="footer-newsletter-email"
+                    name="email"
                     type="email"
                     autoComplete="email"
                     required

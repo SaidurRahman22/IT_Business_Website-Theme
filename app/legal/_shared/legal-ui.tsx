@@ -1,5 +1,6 @@
 import { TriangleAlert } from 'lucide-react'
 import type { LegalDoc } from '@/lib/legal'
+import { site } from '@/lib/site'
 
 /**
  * Presentation for the legal documents.
@@ -196,7 +197,7 @@ export function DraftBanner({ doc }: { doc: LegalDoc }) {
       <p>
         It is published in this state deliberately rather than hidden, so that the gap is visible to
         anyone who needs to know about it. If you need the position that will actually bind us, ask
-        for it at hello@envenox.com and we will tell you where the review has got to.
+        for it at {site.contact.email} and we will tell you where the review has got to.
       </p>
     </div>
   )

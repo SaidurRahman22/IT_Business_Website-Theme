@@ -19,6 +19,7 @@
 import type { Field } from '@/lib/contact'
 import { enquiryFields } from '@/lib/contact'
 import { site } from '@/lib/site'
+import { Honeypot } from '@/app/contact/_shared/Fields'
 import { Button } from '@/components/ui/Button'
 
 /** id -> message. Each is rendered hidden and revealed by :target. */
@@ -96,8 +97,9 @@ export function EnquiryForm({ returnTo, interest, id = 'enquiry-form' }: Enquiry
     // action, and warns if either is restated here. The served markup is still
     // an ordinary POST form with a hidden action id, which is what makes the
     // no-JavaScript path work.
-    <form action="/thank-you" method="get" className="sv-form" id={id}>
-      <input type="hidden" name="from" value="enquiry" />
+    <form action={site.forms.endpoint} method="post" className="sv-form" id={id}>
+      <input type="hidden" name="form" value="enquiry" />
+      <Honeypot />
       <input type="hidden" name="returnTo" value={returnTo} />
 
       {ERRORS.map((entry) => (

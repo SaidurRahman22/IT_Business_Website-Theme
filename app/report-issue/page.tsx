@@ -11,7 +11,7 @@ import { Section } from '@/components/ui/Section'
 import { Reveal, RevealGroup } from '@/components/ui/Reveal'
 import { Breadcrumbs, JsonLd, ORGANIZATION_REF, breadcrumbList } from '../contact/_shared/seo'
 import { reportFields } from '../contact/_shared/report-fields'
-import { ErrorSummary, FormField, FormStyles } from '../contact/_shared/Fields'
+import { ErrorSummary, FormField, FormStyles, Honeypot } from '../contact/_shared/Fields'
 import { decodeErrors, decodeValues } from '../contact/_shared/validate'
 
 /**
@@ -233,8 +233,14 @@ export default async function ReportIssuePage() {
 
             {/* Server action, server validation, no Client Component. Submits
                 with scripting off exactly as it does with scripting on. */}
-            <form className="frm" action="/thank-you" method="get" style={{ marginTop: 'var(--s8)' }}>
-              <input type="hidden" name="from" value="report-issue" />
+            <form
+              className="frm"
+              action={site.forms.endpoint}
+              method="post"
+              style={{ marginTop: 'var(--s8)' }}
+            >
+              <input type="hidden" name="form" value="report-issue" />
+              <Honeypot />
               <ErrorSummary id="report-errors" fields={reportFields} errors={errors} />
 
               <div className="frm__grid">

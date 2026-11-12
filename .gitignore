@@ -24,9 +24,20 @@ out/
 next-env.d.ts
 .vercel/
 
+# Old OpenNext build output (the site is a static export now) and TypeScript caches
+.open-next/
+*.tsbuildinfo
+
+# Invoices: real client documents and a signature image. The repo is public,
+# so none of this may be committed.
+invoice-template/
+
 # Generated assets — regenerate with `npm run assets:noise` / `assets:hero`
 # (kept OUT of ignore on purpose: they are build inputs the site ships, and a
 # fresh clone must render identically without running a generation step.)
 
 # Screenshot scratch from verification runs
 .shots/
+
+# Brand exploration, not shipped and not committed
+brand/

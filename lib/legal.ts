@@ -12,6 +12,7 @@
  */
 
 import { bySlug } from './lookup'
+import { site } from './site'
 
 export type LegalDoc = {
   slug: string
@@ -41,7 +42,7 @@ export const vulnerabilityDisclosure: LegalDoc = {
     {
       heading: 'How to report',
       body: [
-        'Email security@envenox.com, or use the form at /report-issue. Encrypt with the PGP key at /.well-known/pgp-key.txt if you prefer; we will reply in kind.',
+        `Email ${site.contact.securityEmail}, or use the form at /report-issue. Encrypt with the PGP key at /.well-known/pgp-key.txt if you prefer; we will reply in kind.`,
         'Include what you did, what happened, and enough detail for us to reproduce it. A reproduction path is worth more than a severity score. We will do the scoring.',
       ],
     },
@@ -118,7 +119,7 @@ export const accessibilityStatement: LegalDoc = {
       ],
       list: [
         'Embedded video clips do not yet have captions or transcripts. They are decorative rather than informational, and every one carries a descriptive label, but captions are owed and are in progress.',
-        'Downloadable PDFs (methodologies, datasheets and the sample report) are not yet verified as tagged and accessible. Until they are, an HTML equivalent is available on request at hello@envenox.com and we will treat that request as a defect report rather than a favour.',
+        `Downloadable PDFs (methodologies, datasheets and the sample report) are not yet verified as tagged and accessible. Until they are, an HTML equivalent is available on request at ${site.contact.email} and we will treat that request as a defect report rather than a favour.`,
         'The product-console illustrations are dense by design, because a sparse one would misrepresent the software. They are captioned and their data is available as text, but they are harder to consume by screen reader than the surrounding prose.',
       ],
     },
@@ -132,7 +133,7 @@ export const accessibilityStatement: LegalDoc = {
     {
       heading: 'Tell us when we are wrong',
       body: [
-        'Email hello@envenox.com with the page and what went wrong. We aim to reply within two business days and to fix confirmed issues within 30 days, or to tell you honestly when something will take longer and why.',
+        `Email ${site.contact.email} with the page and what went wrong. We aim to reply within two business days and to fix confirmed issues within 30 days, or to tell you honestly when something will take longer and why.`,
       ],
     },
   ],
@@ -183,7 +184,7 @@ export const privacyNotice: LegalDoc = {
     {
       heading: 'Your rights',
       body: [
-        'Access, rectification, erasure, restriction, portability, and objection, including the right to object to processing based on legitimate interest. Contact privacy@envenox.com. We respond within one month and will not require you to explain why.',
+        `Access, rectification, erasure, restriction, portability, and objection, including the right to object to processing based on legitimate interest. Contact ${site.contact.privacyEmail}. We respond within one month and will not require you to explain why.`,
         'You may complain to the Information Commissioner’s Office. We would rather you told us first, but that is your choice and not a precondition.',
       ],
     },

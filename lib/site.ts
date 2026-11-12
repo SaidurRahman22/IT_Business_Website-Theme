@@ -38,11 +38,42 @@ export const site = {
     irHotlineCommitment: 'Answered by a responder, 24/7. Median pickup under 4 minutes.',
     /** @placeholder */
     switchboard: '+44 20 4525 9101',
-    email: 'hello@envenox.com',
-    securityEmail: 'security@envenox.com',
-    pressEmail: 'press@envenox.com',
-    careersEmail: 'careers@envenox.com',
+    /**
+     * MAILBOX REALITY, verified 2026-11-08 by SMTP RCPT probe against
+     * mx.zoho.com: `admin@envenox.com` is the ONLY address that exists.
+     * hello@, security@, press@, careers@ and privacy@ every one returned
+     * `550 5.1.1 User does not exist`, so until this change the site
+     * published five addresses that hard-bounced, including the one in
+     * /.well-known/security.txt that researchers are told to disclose to.
+     *
+     * All five therefore point at the one real mailbox. They are kept as
+     * separate fields on purpose: when role aliases are created in Zoho
+     * (Admin Console, Users, admin@envenox.com, Mail Aliases), give each
+     * field its own address back and every consumer updates with it. Do
+     * not re-introduce an address here before probing that it accepts mail.
+     */
+    email: 'admin@envenox.com',
+    securityEmail: 'admin@envenox.com',
+    pressEmail: 'admin@envenox.com',
+    careersEmail: 'admin@envenox.com',
+    privacyEmail: 'admin@envenox.com',
     responseSla: 'A named engineer replies within one business day. Scoping call within three.',
+  },
+
+  /**
+   * Where every form POSTs.
+   *
+   * The site is a static export and cannot receive a POST itself, so forms go
+   * to the `envenox-forms` Worker (see form-worker/), which validates the
+   * submission and relays it over authenticated SMTP to the admin mailbox.
+   * Nothing passes through a third party, which matters because /report-issue
+   * invites vulnerability disclosures.
+   *
+   * Do NOT point this back at /thank-you. That was the old behaviour and it
+   * silently discarded every enquiry.
+   */
+  forms: {
+    endpoint: 'https://forms.envenox.com/submit',
   },
 
   social: {

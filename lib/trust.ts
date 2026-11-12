@@ -11,6 +11,8 @@
  * not to soften the wording.
  */
 
+import { site } from './site'
+
 export type TrustSection = {
   id: string
   heading: string
@@ -129,8 +131,8 @@ export const trustSections: TrustSection[] = [
 export const trustContacts = {
   heading: 'Ask us something this page does not answer',
   lines: [
-    { label: 'Security questionnaires and customer security reviews', value: 'security@envenox.com, we answer from one source of truth rather than re-deriving each time' },
-    { label: 'Data protection and DPAs', value: 'privacy@envenox.com' },
-    { label: 'Report a vulnerability in our own systems', value: 'security@envenox.com, no NDA required' },
+    { label: 'Security questionnaires and customer security reviews', value: `${site.contact.securityEmail}, we answer from one source of truth rather than re-deriving each time` },
+    { label: 'Data protection and DPAs', value: site.contact.privacyEmail },
+    { label: 'Report a vulnerability in our own systems', value: `${site.contact.securityEmail}, no NDA required` },
   ],
 }

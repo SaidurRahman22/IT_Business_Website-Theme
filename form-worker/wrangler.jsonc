@@ -1,0 +1,67 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+
+  // envenox-forms — the form receiver.
+  //
+  // DELIBERATELY SEPARATE from the site Worker (../wrangler.jsonc). The site is
+  // static assets with no "main" and therefore burns no CPU. Putting a Worker
+  // script back on that deployment is exactly what exceeded the Workers Free
+  // CPU allowance and took envenox.com down on 2026-11-06. This Worker has its
+  // own deployment, so a fault here can lose a submission but cannot take the
+  // website offline.
+  //
+  // It receives form POSTs and relays them over authenticated SMTP to
+  // admin@envenox.com. No third party ever sees a submission, which matters
+  // because /report-issue invites vulnerability disclosures.
+  //
+  // VERIFIED 2026-11-08 by spike on Cloudflare's own network: outbound TCP to
+  // smtp.zoho.com:465 (implicit TLS) and :587 (STARTTLS) both connect. Port 25
+  // returns "Connections to port 25 are prohibited", which is why 465 is used.
+
+  "name": "envenox-forms",
+  "account_id": "01e31f4fe3b3891a62a2bee09b76285f",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+
+  "observability": { "enabled": true },
+
+  // Its own hostname rather than a workers.dev URL: corporate filters block
+  // *.workers.dev often enough to matter on a B2B contact form, and a form
+  // posting to a third-party-looking domain is a poor signal on a security
+  // site. zone_id is explicit because the deploying credential may lack
+  // zone-read scope, which otherwise fails with "Can't infer zone" [10082].
+  // This ADDS a subdomain. It does not touch the root record or MX.
+  "routes": [
+    {
+      "pattern": "forms.envenox.com",
+      "custom_domain": true,
+      "zone_id": "f75ed98c73bc4eac6949d4e82cf972b6"
+    }
+  ],
+
+  // Per-IP throttle. Without it this public endpoint is an open path to the
+  // company mailbox and, worse, to Zoho's outbound reputation.
+  "ratelimits": [
+    {
+      "name": "FORM_RATE_LIMIT",
+      "namespace_id": "1001",
+      "simple": { "limit": 5, "period": 60 }
+    }
+  ],
+
+  "vars": {
+    "SMTP_HOST": "smtp.zoho.com",
+    "SMTP_PORT": "465",
+    "MAIL_FROM": "admin@envenox.com",
+    "MAIL_TO": "admin@envenox.com"
+  }
+
+  // SECRETS ARE NOT STORED HERE. Set them from the project root with:
+  //
+  //   npx wrangler secret put SMTP_PASSWORD   -c form-worker/wrangler.jsonc
+  //   npx wrangler secret put TURNSTILE_SECRET -c form-worker/wrangler.jsonc   (optional)
+  //
+  // SMTP_PASSWORD must be a Zoho APPLICATION-SPECIFIC password, not the
+  // mailbox password: the mailbox password stops working once 2FA is on, and
+  // an app password can be revoked by itself without locking you out.
+}

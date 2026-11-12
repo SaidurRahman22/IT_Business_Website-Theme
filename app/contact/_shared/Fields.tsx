@@ -214,10 +214,13 @@ select.frm__control {
  * `required`/`type` validation all remain in the served HTML, so the form is
  * still complete to a crawler, to reader mode, and with scripting disabled.
  *
- * WHEN A REAL BACKEND IS ADDED: set SUBMITS_VALUES to true and point the forms
- * at it. That is the only change needed here.
+ * 2026-11-08: a real backend now exists (form-worker/, posting over SMTP to
+ * the admin mailbox), so values ARE submitted. The exposure the old comment
+ * describes is gone with it, because the forms POST rather than GET: field
+ * values travel in the request body, not in the URL, so they never reach
+ * browser history, a Referer header or an access log.
  */
-const SUBMITS_VALUES = false
+const SUBMITS_VALUES = true
 
 export function FormStyles() {
   return (
@@ -412,6 +415,45 @@ export function FormField({ field, errors, values }: FieldProps) {
         aria-describedby={describedBy}
       />
       {errorNode}
+    </div>
+  )
+}
+
+/**
+ * Spam honeypot.
+ *
+ * A field no human can see or tab to. Bots fill every input they find, so a
+ * non-empty `website` marks the submission as automated. The Worker then
+ * answers exactly as it would on success, so the bot learns nothing and does
+ * not adapt.
+ *
+ * Positioned off-screen rather than `display:none` or `hidden`, because many
+ * bots skip fields that are obviously hidden. Every value here is a literal:
+ * a CSS custom property that is undefined in this scope would silently drop
+ * the whole declaration and leave the field visible to real visitors.
+ */
+export function Honeypot() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        left: '-9999px',
+        top: 'auto',
+        width: '1px',
+        height: '1px',
+        overflow: 'hidden',
+      }}
+    >
+      <label htmlFor="envenox-website">Leave this field empty</label>
+      <input
+        type="text"
+        id="envenox-website"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        defaultValue=""
+      />
     </div>
   )
 }
